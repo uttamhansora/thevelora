@@ -1,0 +1,32 @@
+import { expect, test } from "@playwright/test";
+
+test("storefront, checkout, and admin verification", async ({ page }) => {
+  test.skip(!process.env.E2E_ADMIN_EMAIL || !process.env.E2E_ADMIN_PASSWORD, "Set E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD, and a running store with a published product.");
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Elegance Woven for You." })).toBeVisible();
+  await page.getByRole("link", { name: "Shop Collection" }).click();
+  const product = page.locator("a").filter({ hasText: /.+/ }).first();
+  await product.click();
+  await page.getByRole("button", { name: "Add to Cart" }).click();
+  await page.goto("/checkout");
+  await page.getByLabel("Full name").fill("Asha Menon");
+  await page.getByLabel("Mobile").fill("9876543210");
+  await page.getByLabel("Address").fill("12 Residency Road");
+  await page.getByLabel("City").fill("Bengaluru");
+  await page.getByLabel("PIN code").fill("560001");
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: /Place order/ }).click();
+  await expect(page.getByText("Payment instructions")).toBeVisible();
+  await page.getByLabel("UTR or reference").fill("UTR123456");
+  await page.getByRole("button", { name: "Submit payment reference" }).click();
+  await page.goto("/admin/login");
+  await page.getByLabel("Email").fill(process.env.E2E_ADMIN_EMAIL || "");
+  await page.getByLabel("Password").fill(process.env.E2E_ADMIN_PASSWORD || "");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.goto("/admin/orders");
+  await page.getByRole("button", { name: /VEL-/ }).first().click();
+  await page.getByRole("button", { name: "Mark paid" }).click();
+  page.once("dialog", (dialog) => dialog.accept("matched the merchant statement"));
+  await page.getByRole("button", { name: "Mark shipped" }).click();
+  await expect(page.getByText(/processing|shipped|paid/i)).toBeVisible();
+});
