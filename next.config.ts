@@ -14,7 +14,6 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=(), payment=(self)",
   },
-  { key: "X-DNS-Prefetch-Control", value: "off" },
   {
     key: "Content-Security-Policy",
     value: [
@@ -41,19 +40,6 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-
-  // Applies to Next.js Server Actions when additional trusted origins
-  // are needed, such as requests through a reverse proxy.
-  experimental: {
-    serverActions: {
-      allowedOrigins: [
-        "thevelora.website",
-        "www.thevelora.website",
-        "https://thevelora.website",
-        "https://www.thevelora.website",
-      ],
-    },
-  },
 
   images: {
     remotePatterns: [
