@@ -136,7 +136,11 @@ export const defaultStoreSettings: StoreSettingsData = {
     { title: "A person checks UPI payments", body: "Manual UPI orders stay awaiting verification until an administrator confirms the transfer in the merchant account." },
   ],
   contact: { email: "", phone: "", address: "" },
-  social: { instagram: "", facebook: "", pinterest: "" },
+  social: {
+    instagram: "https://www.instagram.com/the_veloraa.in/",
+    facebook: "https://www.facebook.com/profile.php?id=61595954965283",
+    pinterest: "",
+  },
   footerLinks: [
     { label: "About Us", href: "/about" },
     { label: "Contact", href: "/contact" },

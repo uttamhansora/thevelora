@@ -3,12 +3,17 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { Heart, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
+import { Facebook, Heart, Instagram, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
 import { useStore } from "@/components/storefront/providers";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { PriceDisplay } from "@/components/shared/price-display";
 import { discountPercent } from "@/lib/money";
 import type { StoreSettingsData } from "@/lib/validation/settings";
+
+const BRAND_SOCIAL = {
+  instagram: "https://www.instagram.com/the_veloraa.in/",
+  facebook: "https://www.facebook.com/profile.php?id=61595954965283",
+} as const;
 
 const NAV = [
   { href: "/", label: "Home" },
@@ -270,11 +275,30 @@ export function SiteFooter({ settings }: { settings: StoreSettingsData }) {
         </div>
         <div>
           <h2 className="font-serif text-2xl">Social</h2>
-          <div className="mt-3 grid gap-2 text-sm">
-            {settings.social.instagram ? <a href={settings.social.instagram}>Instagram</a> : null}
-            {settings.social.facebook ? <a href={settings.social.facebook}>Facebook</a> : null}
-            {settings.social.pinterest ? <a href={settings.social.pinterest}>Pinterest</a> : null}
-            {!settings.social.instagram && !settings.social.facebook && !settings.social.pinterest ? <p className="text-muted">Social links can be added by an administrator.</p> : null}
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <a
+              href={settings.social.instagram || BRAND_SOCIAL.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="grid h-11 w-11 place-items-center rounded-full border border-gold text-primary transition-colors hover:bg-gold/10"
+              aria-label="Instagram — The Velora"
+            >
+              <Instagram size={20} strokeWidth={1.75} />
+            </a>
+            <a
+              href={settings.social.facebook || BRAND_SOCIAL.facebook}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="grid h-11 w-11 place-items-center rounded-full border border-gold text-primary transition-colors hover:bg-gold/10"
+              aria-label="Facebook — The Velora"
+            >
+              <Facebook size={20} strokeWidth={1.75} />
+            </a>
+            {settings.social.pinterest ? (
+              <a href={settings.social.pinterest} target="_blank" rel="noopener noreferrer" className="text-sm hover:text-primary">
+                Pinterest
+              </a>
+            ) : null}
           </div>
         </div>
       </div>
