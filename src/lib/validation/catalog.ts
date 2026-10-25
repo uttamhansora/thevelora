@@ -163,6 +163,22 @@ export const loginSchema = z.object({
   password: z.string().min(1).max(200),
 });
 
+export const customerRegisterSchema = z.object({
+  name: z.string().trim().min(2).max(80),
+  mobile: mobileSchema,
+  email: z.union([emailSchema, z.literal("")]).default(""),
+  password: z.string().min(8).max(200),
+});
+
+export const customerLoginSchema = z.object({
+  mobile: mobileSchema,
+  password: z.string().min(1).max(200),
+});
+
+export const customerPasswordSchema = z.object({
+  password: z.string().min(8).max(200),
+});
+
 export const passwordChangeSchema = z.object({
   currentPassword: z.string().min(1).max(200),
   newPassword: z.string().min(12).max(200),

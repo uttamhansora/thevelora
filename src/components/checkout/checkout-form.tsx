@@ -32,6 +32,24 @@ export function CheckoutForm() {
   const [pending, setPending] = useState(false);
   const form = useForm<FormValues>({ defaultValues: { state: "Maharashtra", email: "", landmark: "", notes: "", couponCode: "", accepted: false } });
 
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((response) => response.json())
+      .then((data) => {
+        if (!data.customer) return;
+        const current = form.getValues();
+        form.reset({
+          ...current,
+          fullName: data.customer.name || current.fullName,
+          mobile: data.customer.mobile || current.mobile,
+          email: data.customer.email || current.email,
+        });
+      })
+      .catch(() => undefined);
+    // Prefill once when checkout loads.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const couponCode = form.watch("couponCode");
   const pinCode = form.watch("pinCode");
 
@@ -127,7 +145,8 @@ export function CheckoutForm() {
           </dl>
         ) : <p className="mt-4 text-muted">Calculating the current total…</p>}
         {quote?.couponMessage ? <p className="mt-2 text-sm text-primary">{quote.couponMessage}</p> : null}
-        <p className="mt-4 text-xs text-muted">Guest checkout is available. Payment stays pending until the store verifies the UPI transfer.</p>
+        <p className="mt-4 text-xs text-muted">Guest checkout is available. Your mobile number creates or updates your account and signs you in after the order. Payment stays pending until the store verifies the UPI transfer.</p>
+        <p className="text-xs text-muted"><Link className="underline" href="/login">Sign in</Link> or <Link className="underline" href="/register">register</Link> to prefill your details.</p>
       </aside>
     </form>
   );

@@ -60,6 +60,7 @@ const customerSchema = new Schema(
     name: { type: String, required: true },
     mobile: { type: String, required: true, unique: true },
     email: { type: String, default: "" },
+    passwordHash: { type: String, default: null, select: false },
     orderCount: { type: Number, default: 0 },
     lastOrderAt: { type: Date, default: null },
   },

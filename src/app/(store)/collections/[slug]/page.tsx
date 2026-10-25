@@ -34,7 +34,6 @@ export default async function CollectionPage({ params, searchParams }: Props) {
   const result = await listPublicProducts({
     collectionId: String(collection._id),
     q: one(query.q),
-    color: one(query.color),
     fabric: one(query.fabric),
     availability: one(query.availability),
     categorySlug: one(query.category),
@@ -63,20 +62,21 @@ export default async function CollectionPage({ params, searchParams }: Props) {
     return search ? `?${search}` : "?";
   };
   return (
-    <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[240px_1fr]">
-      <CollectionFilters
-        categories={categories}
-        defaults={{
-          q: one(query.q),
-          min: one(query.min),
-          max: one(query.max),
-          color: one(query.color),
-          fabric: one(query.fabric),
-          availability: one(query.availability),
-          category: one(query.category),
-          sort: one(query.sort),
-        }}
-      />
+    <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[260px_1fr]">
+      <div className="lg:sticky lg:top-24 lg:self-start">
+        <CollectionFilters
+          categories={categories}
+          defaults={{
+            q: one(query.q),
+            min: one(query.min),
+            max: one(query.max),
+            fabric: one(query.fabric),
+            availability: one(query.availability),
+            category: one(query.category),
+            sort: one(query.sort),
+          }}
+        />
+      </div>
       <div>
         <h1 className="font-serif text-5xl capitalize">{collection.name}</h1>
         {collection.description ? <p className="mt-3 max-w-2xl text-muted">{collection.description}</p> : null}

@@ -39,7 +39,7 @@ body {
 
 h1, h2, h3, .font-serif { font-family: var(--font-cormorant), serif; }
 
-a { color: inherit; }
+/* a { color: inherit; } */
 
 button, input, textarea, select { font: inherit; }
 
@@ -123,6 +123,7 @@ button, input, textarea, select { font: inherit; }
     border-radius: 1.25rem;
     box-shadow: 0 10px 30px rgba(48, 37, 31, 0.04);
   }
+
 }
 
 @media (max-width: 640px) {

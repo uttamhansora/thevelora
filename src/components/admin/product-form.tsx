@@ -93,11 +93,40 @@ export function ProductForm({ productId }: { productId?: string }) {
     setForm((current) => ({ ...current, ...partial }));
   }
 
-  async function upload(file: File) {
+  const maxImages = 12;
+
+  async function uploadOne(file: File) {
     const body = new FormData();
     body.set("file", file);
     const data = await adminFetch(csrfToken, "/api/admin/uploads", { method: "POST", body });
-    update({ images: [...form.images, { ...data.image, alt: form.name }] });
+    setForm((current) => ({
+      ...current,
+      images: [...current.images, { ...data.image, alt: current.name }],
+    }));
+  }
+
+  async function uploadFiles(fileList: FileList | File[] | null) {
+    if (!fileList || fileList.length === 0) return;
+    const files = Array.from(fileList).filter((file) => file.type.startsWith("image/"));
+    if (files.length === 0) {
+      setMessage("Choose one or more image files.");
+      return;
+    }
+    const slots = Math.max(0, maxImages - form.images.length);
+    if (slots === 0) {
+      setMessage(`You can add up to ${maxImages} images per product.`);
+      return;
+    }
+    const batch = files.slice(0, slots);
+    setMessage(batch.length > 1 ? `Uploading ${batch.length} images…` : "Uploading image…");
+    try {
+      for (const file of batch) {
+        await uploadOne(file);
+      }
+      setMessage(batch.length > 1 ? `${batch.length} images added.` : "Image added.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Image upload failed.");
+    }
   }
 
   function moveImage(index: number, direction: -1 | 1) {
@@ -198,20 +227,74 @@ export function ProductForm({ productId }: { productId?: string }) {
         <label className="text-sm">Low-stock threshold<input className="field" type="number" value={form.lowStockThreshold} onChange={(event) => update({ lowStockThreshold: Number(event.target.value) })} /></label>
         <label className="text-sm">Weight grams<input className="field" value={form.weightGrams} onChange={(event) => update({ weightGrams: event.target.value })} /></label>
       </div>
-      <section>
-        <h2 className="font-serif text-2xl">Images</h2>
-        <input className="mt-2" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(event) => { const file = event.target.files?.[0]; if (file) upload(file).catch((error: Error) => setMessage(error.message)); }} />
-        <div className="mt-3 grid gap-3">
-          {form.images.map((image, index) => (
-            <div key={image.url} className="flex items-center gap-3" draggable onDragStart={(event) => event.dataTransfer.setData("text/plain", String(index))} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { const from = Number(event.dataTransfer.getData("text/plain")); moveImage(from, index - from > 0 ? 1 : -1); }}>
-              <img src={image.url} alt={image.alt || ""} className="h-16 w-14 object-cover" />
-              <input className="field" value={image.alt} aria-label="Alt text" onChange={(event) => update({ images: form.images.map((item, itemIndex) => itemIndex === index ? { ...item, alt: event.target.value } : item) })} />
-              <button type="button" onClick={() => moveImage(index, -1)}>Up</button>
-              <button type="button" onClick={() => moveImage(index, 1)}>Down</button>
-              <button type="button" onClick={() => update({ images: form.images.filter((_, itemIndex) => itemIndex !== index) })}>Remove</button>
-            </div>
-          ))}
+      <section className="grid gap-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="font-serif text-2xl">Product images</h2>
+            <p className="mt-1 text-sm text-muted">Add several photos. The first image is used on collection cards. Up to {maxImages} images.</p>
+          </div>
+          <p className="text-sm text-muted">{form.images.length}/{maxImages}</p>
         </div>
+        <label
+          className="card flex cursor-pointer flex-col items-center justify-center gap-2 border-dashed px-4 py-8 text-center text-sm text-muted"
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            event.preventDefault();
+            uploadFiles(event.dataTransfer.files);
+          }}
+        >
+          <span className="font-medium text-text">Add images</span>
+          <span>Choose multiple files or drop images here</span>
+          <input
+            className="sr-only"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            multiple
+            onChange={(event) => {
+              uploadFiles(event.target.files).finally(() => {
+                event.target.value = "";
+              });
+            }}
+          />
+        </label>
+        {form.images.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {form.images.map((image, index) => (
+              <article
+                key={`${image.url}-${index}`}
+                className="card overflow-hidden"
+                draggable
+                onDragStart={(event) => event.dataTransfer.setData("text/plain", String(index))}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={(event) => {
+                  const from = Number(event.dataTransfer.getData("text/plain"));
+                  moveImage(from, index - from > 0 ? 1 : -1);
+                }}
+              >
+                <div className="relative aspect-[3/4] bg-rose/20">
+                  <img src={image.url} alt={image.alt || ""} className="h-full w-full object-cover" />
+                  {index === 0 ? <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-xs text-white">Cover</span> : null}
+                </div>
+                <div className="grid gap-2 p-3">
+                  <label className="grid gap-1 text-xs">
+                    Alt text
+                    <input
+                      className="field"
+                      value={image.alt}
+                      aria-label={`Alt text for image ${index + 1}`}
+                      onChange={(event) => update({ images: form.images.map((item, itemIndex) => itemIndex === index ? { ...item, alt: event.target.value } : item) })}
+                    />
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    <button className="btn btn-secondary" type="button" onClick={() => moveImage(index, -1)} disabled={index === 0}>Move up</button>
+                    <button className="btn btn-secondary" type="button" onClick={() => moveImage(index, 1)} disabled={index === form.images.length - 1}>Move down</button>
+                    <button className="btn btn-secondary" type="button" onClick={() => update({ images: form.images.filter((_, itemIndex) => itemIndex !== index) })}>Remove</button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : null}
       </section>
       <section>
         <div className="flex items-center justify-between"><h2 className="font-serif text-2xl">Variants</h2><button className="btn btn-secondary" type="button" onClick={() => update({ variants: [...form.variants, { name: "", sku: "", priceOverride: "", stockQuantity: 0, color: "" }] })}>Add variant</button></div>

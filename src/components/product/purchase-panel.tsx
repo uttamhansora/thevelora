@@ -74,14 +74,14 @@ export function PurchasePanel({ product }: { product: { id: string; slug: string
           <Heart size={16} /> {saved ? "Saved" : "Wishlist"}
         </button>
       </div>
-      <form onSubmit={checkPin} className="grid gap-2">
+      {/* <form onSubmit={checkPin} className="grid gap-2">
         <label htmlFor="pin">Delivery PIN code</label>
         <div className="flex min-w-0 gap-2">
           <input id="pin" className="field min-w-0 flex-1" inputMode="numeric" maxLength={6} value={pin} onChange={(event) => setPin(event.target.value)} placeholder="6-digit PIN" />
           <button className="btn btn-secondary shrink-0" type="submit">Check</button>
         </div>
         {pinMessage ? <p className="text-sm text-muted">{pinMessage}</p> : null}
-      </form>
+      </form> */}
     </div>
   );
 }
