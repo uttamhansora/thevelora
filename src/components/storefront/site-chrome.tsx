@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { Facebook, Heart, Instagram, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
+import { Heart, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
 import { useStore } from "@/components/storefront/providers";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { PriceDisplay } from "@/components/shared/price-display";
@@ -14,6 +14,24 @@ const BRAND_SOCIAL = {
   instagram: "https://www.instagram.com/the_veloraa.in/",
   facebook: "https://www.facebook.com/profile.php?id=61595954965283",
 } as const;
+
+function IconInstagram({ className }: { className?: string }) {
+  return (
+    <svg className={className} width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.25" cy="6.75" r="0.75" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function IconFacebook({ className }: { className?: string }) {
+  return (
+    <svg className={className} width={20} height={20} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M13.5 22v-8h2.75l.42-3H13.5V9.26c0-.86.24-1.45 1.48-1.45H16.9V5.14c-.26-.04-1.16-.11-2.2-.11-2.18 0-3.67 1.33-3.67 3.77V11H8.5v3h2.53v8h2.47z" />
+    </svg>
+  );
+}
 
 const NAV = [
   { href: "/", label: "Home" },
@@ -283,7 +301,7 @@ export function SiteFooter({ settings }: { settings: StoreSettingsData }) {
               className="grid h-11 w-11 place-items-center rounded-full border border-gold text-primary transition-colors hover:bg-gold/10"
               aria-label="Instagram — The Velora"
             >
-              <Instagram size={20} strokeWidth={1.75} />
+              <IconInstagram />
             </a>
             <a
               href={settings.social.facebook || BRAND_SOCIAL.facebook}
@@ -292,7 +310,7 @@ export function SiteFooter({ settings }: { settings: StoreSettingsData }) {
               className="grid h-11 w-11 place-items-center rounded-full border border-gold text-primary transition-colors hover:bg-gold/10"
               aria-label="Facebook — The Velora"
             >
-              <Facebook size={20} strokeWidth={1.75} />
+              <IconFacebook />
             </a>
             {settings.social.pinterest ? (
               <a href={settings.social.pinterest} target="_blank" rel="noopener noreferrer" className="text-sm hover:text-primary">
