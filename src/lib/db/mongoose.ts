@@ -60,7 +60,24 @@ const defaultConnect: ConnectFn = (uri, dbName) =>
     maxPoolSize: 10,
   });
 
+/**
+ * Local demo mode: when MONGODB_URI is missing (or VELORA_DEMO_DATA=1 forces
+ * it), the storefront serves data from src/data/demo-products.ts through an
+ * in-memory store. Admin routes and production deployments are unaffected —
+ * they still require a real database connection.
+ */
+export function isDemoModeEnabled(): boolean {
+  const forced = process.env.VELORA_DEMO_DATA === "1";
+  const hasUri = Boolean(process.env.MONGODB_URI?.trim());
+  return forced || !hasUri;
+}
+
 export async function connectDB(): Promise<typeof mongoose> {
+  if (isDemoModeEnabled()) {
+    throw new DatabaseConfigError(
+      "Database is not configured. Running in local demo mode with sample catalogue data.",
+    );
+  }
   return connectWithCache({
     uri: process.env.MONGODB_URI,
     dbName: process.env.MONGODB_DB_NAME?.trim() || "thevelora",
