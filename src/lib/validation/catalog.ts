@@ -179,6 +179,11 @@ export const customerPasswordSchema = z.object({
   password: z.string().min(8).max(200),
 });
 
+export const customerProfileSchema = z.object({
+  name: z.string().trim().min(2).max(80),
+  email: z.union([emailSchema, z.literal("")]).default(""),
+});
+
 export const passwordChangeSchema = z.object({
   currentPassword: z.string().min(1).max(200),
   newPassword: z.string().min(12).max(200),

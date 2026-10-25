@@ -30,14 +30,14 @@ export function CustomerLoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="card grid max-w-md gap-3 p-5">
-      <h1 className="font-serif text-4xl">Sign in</h1>
-      <p className="text-sm text-muted">Use the mobile number and password from your account.</p>
+    <form onSubmit={onSubmit} className="card grid w-full gap-3 p-5 sm:p-6">
+      <h1 className="text-center font-serif text-4xl">Sign in</h1>
+      <p className="text-center text-sm text-muted">Use the mobile number and password from your account.</p>
       <label className="grid gap-1 text-sm">Mobile<input className="field" name="mobile" inputMode="numeric" autoComplete="tel" pattern="[6-9][0-9]{9}" required /></label>
       <label className="grid gap-1 text-sm">Password<input className="field" name="password" type="password" autoComplete="current-password" required /></label>
       {error ? <p className="text-sm text-primary">{error}</p> : null}
       <button className="btn" type="submit" disabled={pending}>{pending ? "Signing in…" : "Sign in"}</button>
-      <p className="text-sm text-muted">New here? <Link className="underline" href="/register">Create an account</Link></p>
+      <p className="text-center text-sm text-muted">New here? <Link className="underline" href="/register">Create an account</Link></p>
     </form>
   );
 }
@@ -73,16 +73,16 @@ export function CustomerRegisterForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="card grid max-w-md gap-3 p-5">
-      <h1 className="font-serif text-4xl">Create account</h1>
-      <p className="text-sm text-muted">Register to save your details for faster checkout.</p>
+    <form onSubmit={onSubmit} className="card grid w-full gap-3 p-5 sm:p-6">
+      <h1 className="text-center font-serif text-4xl">Create account</h1>
+      <p className="text-center text-sm text-muted">Register to save your details for faster checkout.</p>
       <label className="grid gap-1 text-sm">Full name<input className="field" name="name" autoComplete="name" required /></label>
       <label className="grid gap-1 text-sm">Mobile<input className="field" name="mobile" inputMode="numeric" autoComplete="tel" pattern="[6-9][0-9]{9}" required /></label>
       <label className="grid gap-1 text-sm">Email (optional)<input className="field" name="email" type="email" autoComplete="email" /></label>
       <label className="grid gap-1 text-sm">Password<input className="field" name="password" type="password" autoComplete="new-password" minLength={8} required /></label>
       {error ? <p className="text-sm text-primary">{error}</p> : null}
       <button className="btn" type="submit" disabled={pending}>{pending ? "Creating account…" : "Create account"}</button>
-      <p className="text-sm text-muted">Already registered? <Link className="underline" href="/login">Sign in</Link></p>
+      <p className="text-center text-sm text-muted">Already registered? <Link className="underline" href="/login">Sign in</Link></p>
     </form>
   );
 }

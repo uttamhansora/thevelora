@@ -6,6 +6,8 @@ import { createPortal } from "react-dom";
 import { Heart, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
 import { useStore } from "@/components/storefront/providers";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
+import { PriceDisplay } from "@/components/shared/price-display";
+import { discountPercent } from "@/lib/money";
 import type { StoreSettingsData } from "@/lib/validation/settings";
 
 const NAV = [
@@ -45,34 +47,92 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [customerName, setCustomerName] = useState("");
   const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const signedIn = customerName.length > 0;
+  const accountHref = signedIn ? "/account" : "/login";
+  const accountLabel = signedIn ? `Account, ${customerName}` : "Sign in";
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((response) => response.json())
+      .then((data) => setCustomerName(data.customer?.name?.trim() ?? ""))
+      .catch(() => setCustomerName(""));
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center gap-1 px-3 py-3 sm:gap-3 sm:px-4">
+      <div className="mx-auto grid max-w-6xl grid-cols-[2.5rem_1fr_2.5rem] items-center gap-1 px-3 py-3 sm:px-4 lg:flex lg:items-center lg:gap-3">
         <button type="button" className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gold text-primary lg:hidden" aria-label="Open menu" aria-expanded={open} onClick={() => setOpen(true)}><Menu size={19} /></button>
-        <Link href="/" className="min-w-0 flex-1 truncate font-serif text-[1.05rem] tracking-[0.1em] text-primary sm:flex-none sm:text-2xl sm:tracking-[0.18em]">THE VELORA</Link>
+        <Link href="/" className="col-start-2 flex items-center justify-center gap-2 lg:col-auto lg:justify-start">
+          <img
+            src="/images/brand/velora-logo.jpg"
+            alt=""
+            className="h-9 w-9 shrink-0 rounded-md object-cover ring-1 ring-border sm:h-11 sm:w-11"
+            width={44}
+            height={44}
+          />
+          <span className="flex flex-col items-center leading-none lg:items-start">
+            <span className="font-serif text-[0.62rem] font-medium uppercase tracking-[0.32em] text-gold sm:text-xs lg:text-sm lg:tracking-[0.28em]">The</span>
+            <span className="mt-0.5 font-serif text-lg font-semibold tracking-[0.16em] text-primary sm:text-2xl lg:tracking-[0.14em]">Velora</span>
+          </span>
+        </Link>
         <nav className="ml-6 hidden items-center gap-4 text-sm lg:flex" aria-label="Primary">
           {NAV.map((item) => <Link key={item.href} href={item.href} className="hover:text-primary">{item.label}</Link>)}
         </nav>
-        <div className="flex shrink-0 items-center gap-0.5 sm:ml-auto sm:gap-1">
+        <div className="col-start-3 flex items-center justify-end gap-0.5 lg:col-auto lg:ml-auto lg:gap-1">
           <button className="grid h-10 w-10 place-items-center rounded-full" aria-label="Search" onClick={() => setSearchOpen(true)}><Search size={18} /></button>
-          <Link href="/wishlist" className="grid h-10 w-10 place-items-center rounded-full max-[360px]:hidden" aria-label={`Wishlist, ${wishlist.length} items`}><Heart size={18} /></Link>
-          <Link href="/account" className="grid h-10 w-10 place-items-center rounded-full" aria-label="Account"><UserRound size={18} /></Link>
-          <button className="relative grid h-10 w-10 place-items-center rounded-full" aria-label={`Cart, ${count} items`} onClick={() => setCartOpen(true)}>
+          <Link href="/wishlist" className="hidden h-10 w-10 place-items-center rounded-full lg:grid" aria-label={`Wishlist, ${wishlist.length} items`}><Heart size={18} /></Link>
+          <Link href={accountHref} className="hidden max-w-[11rem] items-center gap-1 rounded-full py-1 pl-1 pr-3 lg:flex" aria-label={accountLabel}>
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full"><UserRound size={18} /></span>
+            {signedIn ? <span className="truncate text-sm font-medium">{customerName}</span> : null}
+          </Link>
+          <button className="relative hidden h-10 w-10 place-items-center rounded-full lg:grid" aria-label={`Cart, ${count} items`} onClick={() => setCartOpen(true)}>
             <ShoppingBag size={18} />
             {count > 0 ? <span className="absolute right-0 top-0 rounded-full bg-primary px-1.5 text-[10px] text-white">{count}</span> : null}
           </button>
         </div>
       </div>
-      {open ? <MobileNavigation onClose={() => setOpen(false)} /> : null}
+      {open ? (
+        <MobileNavigation
+          accountHref={accountHref}
+          accountLabel={accountLabel}
+          cartCount={count}
+          customerName={customerName}
+          signedIn={signedIn}
+          wishlistCount={wishlist.length}
+          onClose={() => setOpen(false)}
+          onOpenCart={() => {
+            setOpen(false);
+            setCartOpen(true);
+          }}
+        />
+      ) : null}
       {searchOpen ? <SearchDialog onClose={() => setSearchOpen(false)} /> : null}
       {cartOpen ? <CartDrawer onClose={() => setCartOpen(false)} /> : null}
     </header>
   );
 }
 
-function MobileNavigation({ onClose }: { onClose: () => void }) {
+function MobileNavigation({
+  onClose,
+  onOpenCart,
+  wishlistCount,
+  cartCount,
+  accountHref,
+  accountLabel,
+  customerName,
+  signedIn,
+}: {
+  onClose: () => void;
+  onOpenCart: () => void;
+  wishlistCount: number;
+  cartCount: number;
+  accountHref: string;
+  accountLabel: string;
+  customerName: string;
+  signedIn: boolean;
+}) {
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -93,6 +153,20 @@ function MobileNavigation({ onClose }: { onClose: () => void }) {
           </div>
           <div className="mt-4 grid gap-1">
             {NAV.map((item) => <Link key={item.href} href={item.href} onClick={onClose} className="rounded-xl px-4 py-3 text-lg font-medium transition hover:bg-rose/30">{item.label}</Link>)}
+          </div>
+          <div className="mt-6 grid gap-1 border-t border-border pt-4">
+            <Link href="/wishlist" onClick={onClose} className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition hover:bg-rose/30">
+              <Heart size={18} />
+              <span>Wishlist{wishlistCount > 0 ? ` (${wishlistCount})` : ""}</span>
+            </Link>
+            <Link href={accountHref} onClick={onClose} className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition hover:bg-rose/30" aria-label={accountLabel}>
+              <UserRound size={18} />
+              <span className="truncate">{signedIn ? customerName : "Sign in"}</span>
+            </Link>
+            <button type="button" onClick={onOpenCart} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-base font-medium transition hover:bg-rose/30">
+              <ShoppingBag size={18} />
+              <span>Your bag{cartCount > 0 ? ` (${cartCount})` : ""}</span>
+            </button>
           </div>
           <Link href="/collections/sarees" onClick={onClose} className="btn mt-auto w-full rounded-xl py-3">Shop sarees</Link>
         </nav>
@@ -267,18 +341,75 @@ export function HeroBanner({ settings }: { settings: StoreSettingsData }) {
   );
 }
 
-export function ProductCard({ product }: { product: { slug: string; name: string; pricePaise: number; compareAtPricePaise: number | null; images: { url: string; alt: string }[]; inStock: boolean } }) {
+export type ProductCardData = {
+  id?: string;
+  slug: string;
+  name: string;
+  pricePaise: number;
+  compareAtPricePaise: number | null;
+  images: { url: string; alt: string }[];
+  inStock: boolean;
+  variants?: { sku: string }[];
+};
+
+export function ProductCard({ product, showActions = false }: { product: ProductCardData; showActions?: boolean }) {
+  const store = useStore();
   const image = product.images[0];
+  const discount = discountPercent(product.pricePaise, product.compareAtPricePaise);
+  const saved = product.id ? store.wishlist.some((item) => item.productId === product.id) : false;
+  const defaultVariantSku = product.variants?.[0]?.sku ?? null;
+
+  function addToCart() {
+    if (!product.id || !product.inStock) return;
+    store.addToCart({
+      productId: product.id,
+      variantSku: product.variants && product.variants.length > 0 ? defaultVariantSku : null,
+      quantity: 1,
+    });
+    store.notify("Added to bag.");
+  }
+
+  function toggleWishlist() {
+    if (!product.id) return;
+    store.toggleWishlist({ productId: product.id, slug: product.slug, name: product.name });
+    store.notify(saved ? "Removed from wishlist." : "Saved to wishlist.");
+  }
+
   return (
-    <Link href={`/products/${product.slug}`} className="card group overflow-hidden transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-      <div className="flex aspect-[3/4] items-center justify-center overflow-hidden bg-rose/30">
-        {image ? <ImageWithFallback src={image.url} alt={image.alt || product.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /> : <ImageWithFallback src="/images/fallbacks/product.jpg" alt={product.name} className="h-full w-full object-cover" />}
+    <article className="card group flex h-full flex-col overflow-hidden transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+      <div className="relative overflow-hidden bg-rose/30">
+        {discount != null ? <span className="pointer-events-none absolute left-2 top-2 z-10 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white sm:text-xs">{discount}% off</span> : null}
+        {showActions && product.id ? (
+          <button
+            type="button"
+            className={`absolute right-2 top-2 z-10 grid h-8 w-8 place-items-center rounded-full border shadow-sm transition ${saved ? "border-primary bg-primary text-white" : "border-border bg-surface/95 text-primary"}`}
+            aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
+            aria-pressed={saved}
+            onClick={toggleWishlist}
+          >
+            <Heart size={15} fill={saved ? "currentColor" : "none"} />
+          </button>
+        ) : null}
+        <Link href={`/products/${product.slug}`} className="block aspect-[3/4]">
+          {image ? <ImageWithFallback src={image.url} alt={image.alt || product.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /> : <ImageWithFallback src="/images/fallbacks/product.jpg" alt={product.name} className="h-full w-full object-cover" />}
+        </Link>
       </div>
-      <div className="p-4 sm:p-5">
-        <h3 className="font-serif text-xl leading-tight sm:text-2xl">{product.name}</h3>
-        <p className="mt-1 text-sm">{new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(product.pricePaise / 100)}</p>
-        {!product.inStock ? <p className="text-sm text-muted">Out of stock</p> : null}
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
+        <Link href={`/products/${product.slug}`} className="font-serif text-base leading-tight sm:text-xl">{product.name}</Link>
+        <PriceDisplay className="mt-1" compact pricePaise={product.pricePaise} compareAtPricePaise={product.compareAtPricePaise} />
+        {!product.inStock ? <p className="mt-1 text-xs text-muted sm:text-sm">Out of stock</p> : null}
+        {showActions ? (
+          <button
+            type="button"
+            className="btn btn-secondary mt-3 w-full gap-1.5 py-2 text-xs sm:text-sm"
+            disabled={!product.inStock || !product.id}
+            onClick={addToCart}
+          >
+            <ShoppingBag size={15} />
+            Add to bag
+          </button>
+        ) : null}
       </div>
-    </Link>
+    </article>
   );
 }

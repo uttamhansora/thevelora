@@ -29,12 +29,12 @@ export default async function HomePage() {
       {settings.sections.categories ? (
         <section className="mx-auto max-w-6xl px-4 py-14">
           <h2 className="font-serif text-4xl">Shop by category</h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             {settings.categoryCards.map((card, index) => (
               <Link key={card.href} href={card.href} className="card group overflow-hidden">
-                <div className="relative flex aspect-[4/5] items-end bg-rose/50 p-4">
+                <div className="relative flex aspect-[4/5] items-end bg-rose/50 p-2 sm:p-4">
                   <ImageWithFallback src={card.image.url || categoryPlaceholders[index % categoryPlaceholders.length]} fallbackSrc={categoryPlaceholders[index % categoryPlaceholders.length]} alt={card.image.alt || card.title} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                  <span className="relative rounded-full bg-text/65 px-4 py-2 font-serif text-2xl text-white sm:text-3xl">{card.title}</span>
+                  <span className="relative rounded-full bg-text/65 px-2.5 py-1.5 font-serif text-sm leading-tight text-white sm:px-4 sm:py-2 sm:text-2xl lg:text-3xl">{card.title}</span>
                 </div>
               </Link>
             ))}
@@ -75,7 +75,7 @@ function ProductRail({ title, products, empty }: { title: string; products: { sl
   return (
     <section className="mx-auto max-w-6xl px-4 py-8">
       <h2 className="font-serif text-4xl">{title}</h2>
-      {products.length === 0 ? <div className="mt-6"><EmptyState title={title} body={empty} /></div> : <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{products.map((product) => <ProductCard key={product.slug} product={product} />)}</div>}
+      {products.length === 0 ? <div className="mt-6"><EmptyState title={title} body={empty} /></div> : <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">{products.map((product) => <ProductCard key={product.slug} product={product} />)}</div>}
     </section>
   );
 }

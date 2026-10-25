@@ -36,6 +36,17 @@ export async function loginCustomer(mobile: string, password: string) {
   return customer;
 }
 
+export async function updateCustomerProfile(customerId: string, input: { name: string; email: string }) {
+  await connectDB();
+  const customer = await CustomerModel.findByIdAndUpdate(
+    customerId,
+    { $set: { name: input.name, email: input.email } },
+    { new: true },
+  );
+  if (!customer) throw new AppError("Account not found.", 404);
+  return customer;
+}
+
 export async function setCustomerPassword(customerId: string, password: string) {
   await connectDB();
   const customer = await CustomerModel.findById(customerId).select("+passwordHash");

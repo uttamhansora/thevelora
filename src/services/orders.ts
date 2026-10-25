@@ -400,6 +400,32 @@ export function publicOrderView(order: OrderRecord, instructions?: PaymentInstru
   };
 }
 
+export type CustomerOrderSummary = {
+  orderNumber: string;
+  publicToken: string;
+  totalPaise: number;
+  paymentStatus: string;
+  orderStatus: string;
+  createdAt: Date;
+};
+
+export async function listOrdersForCustomer(mobile: string): Promise<CustomerOrderSummary[]> {
+  await connectDB();
+  const rows = await OrderModel.find({ "customer.mobile": mobile })
+    .sort({ createdAt: -1 })
+    .limit(50)
+    .select("orderNumber publicToken totalPaise paymentStatus orderStatus createdAt")
+    .lean<Array<Pick<OrderRecord, "orderNumber" | "publicToken" | "totalPaise" | "paymentStatus" | "orderStatus" | "createdAt">>>();
+  return rows.map((order) => ({
+    orderNumber: order.orderNumber,
+    publicToken: order.publicToken,
+    totalPaise: order.totalPaise,
+    paymentStatus: order.paymentStatus,
+    orderStatus: order.orderStatus,
+    createdAt: order.createdAt,
+  }));
+}
+
 export async function getOrderByToken(token: string): Promise<OrderRecord | null> {
   await connectDB();
   if (!/^[A-Za-z0-9_-]{20,200}$/.test(token)) return null;
