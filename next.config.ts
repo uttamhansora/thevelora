@@ -49,6 +49,8 @@ const nextConfig: NextConfig = {
       allowedOrigins: [
         "thevelora.website",
         "www.thevelora.website",
+        "https://thevelora.website",
+        "https://www.thevelora.website",
       ],
     },
   },
