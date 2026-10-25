@@ -4,6 +4,14 @@ import { EmptyState } from "@/components/shared/states";
 import { homeRails } from "@/services/catalog";
 import { getStoreSettingsSafe } from "@/services/settings";
 import { formatInr } from "@/lib/money";
+import { ImageWithFallback } from "@/components/shared/image-with-fallback";
+
+const categoryPlaceholders = [
+  "/images/fallbacks/category-silk.jpg",
+  "/images/fallbacks/category-everyday.jpg",
+  "/images/fallbacks/category-festive.jpg",
+  "/images/fallbacks/category-new-arrivals.jpg",
+];
 
 export const dynamic = "force-dynamic";
 
@@ -22,11 +30,11 @@ export default async function HomePage() {
         <section className="mx-auto max-w-6xl px-4 py-14">
           <h2 className="font-serif text-4xl">Shop by category</h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {settings.categoryCards.map((card) => (
-              <Link key={card.href} href={card.href} className="card overflow-hidden">
+            {settings.categoryCards.map((card, index) => (
+              <Link key={card.href} href={card.href} className="card group overflow-hidden">
                 <div className="relative flex aspect-[4/5] items-end bg-rose/50 p-4">
-                  {card.image.url ? <img src={card.image.url} alt={card.image.alt || card.title} className="absolute inset-0 h-full w-full object-cover" /> : null}
-                  <span className="relative font-serif text-3xl">{card.title}</span>
+                  <ImageWithFallback src={card.image.url || categoryPlaceholders[index % categoryPlaceholders.length]} fallbackSrc={categoryPlaceholders[index % categoryPlaceholders.length]} alt={card.image.alt || card.title} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                  <span className="relative rounded-full bg-text/65 px-4 py-2 font-serif text-2xl text-white sm:text-3xl">{card.title}</span>
                 </div>
               </Link>
             ))}
@@ -42,8 +50,8 @@ export default async function HomePage() {
             <h2 className="font-serif text-4xl">{settings.brandStory.title}</h2>
             <p className="mt-4 leading-7 text-muted">{settings.brandStory.body}</p>
           </div>
-          <div className="flex min-h-64 items-center justify-center rounded-3xl bg-rose/40">
-            {settings.brandStory.image.url ? <img src={settings.brandStory.image.url} alt={settings.brandStory.image.alt || ""} className="h-full w-full rounded-3xl object-cover" /> : <span className="font-serif text-6xl text-primary">V</span>}
+          <div className="flex min-h-64 overflow-hidden rounded-3xl bg-rose/40">
+            <ImageWithFallback src={settings.brandStory.image.url || "/images/fallbacks/category-everyday.jpg"} fallbackSrc="/images/fallbacks/category-everyday.jpg" alt={settings.brandStory.image.alt || ""} className="h-full w-full object-cover" />
           </div>
         </section>
       ) : null}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { Heart, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
 import { useStore } from "@/components/storefront/providers";
+import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import type { StoreSettingsData } from "@/lib/validation/settings";
 
 const NAV = [
@@ -40,9 +41,9 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
-        <button className="btn-secondary btn px-3 lg:hidden" aria-label="Open menu" onClick={() => setOpen(true)}><Menu size={18} /></button>
-        <Link href="/" className="font-serif text-2xl tracking-[0.18em] text-primary">THE VELORA</Link>
+      <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4">
+        <button className="btn-secondary btn min-h-10 px-3 lg:hidden" aria-label="Open menu" onClick={() => setOpen(true)}><Menu size={18} /></button>
+        <Link href="/" className="min-w-0 truncate font-serif text-xl tracking-[0.12em] text-primary sm:text-2xl sm:tracking-[0.18em]">THE VELORA</Link>
         <nav className="ml-6 hidden items-center gap-4 text-sm lg:flex" aria-label="Primary">
           {NAV.map((item) => <Link key={item.href} href={item.href} className="hover:text-primary">{item.label}</Link>)}
         </nav>
@@ -66,7 +67,7 @@ export function SiteHeader() {
 function MobileNavigation({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 bg-text/40 lg:hidden" onClick={onClose}>
-      <nav className="h-full w-80 max-w-[85%] bg-background p-6" aria-label="Mobile" onClick={(event) => event.stopPropagation()}>
+      <nav className="h-full w-80 max-w-[88%] overflow-y-auto bg-background p-6" aria-label="Mobile" onClick={(event) => event.stopPropagation()}>
         <button className="mb-6" aria-label="Close menu" onClick={onClose}><X /></button>
         <div className="grid gap-4 text-lg">
           {NAV.map((item) => <Link key={item.href} href={item.href} onClick={onClose}>{item.label}</Link>)}
@@ -122,9 +123,9 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
       <aside className="ml-auto h-full w-[min(420px,100%)] bg-background p-6">
         <div className="flex items-center justify-between"><h2 className="font-serif text-3xl">Your bag</h2><button aria-label="Close cart" onClick={onClose}><X /></button></div>
         <p className="mt-4 text-muted">{cart.length === 0 ? "Your bag is empty." : `${cart.length} item${cart.length === 1 ? "" : "s"} saved on this device.`}</p>
-        <div className="mt-6 flex gap-3">
-          <Link className="btn" href="/cart" onClick={onClose}>View cart</Link>
-          <Link className="btn btn-secondary" href="/collections/sarees" onClick={onClose}>Continue shopping</Link>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <Link className="btn w-full" href="/cart" onClick={onClose}>View cart</Link>
+          <Link className="btn btn-secondary w-full" href="/collections/sarees" onClick={onClose}>Continue shopping</Link>
         </div>
       </aside>
     </div>
@@ -186,7 +187,7 @@ function NewsletterForm() {
         <p className="text-sm text-muted">Occasional collection news. No account is required.</p>
       </div>
       <input id="newsletter-email" name="email" type="email" required className="field" placeholder="Email address" />
-      <button className="btn" type="submit">Subscribe</button>
+      <button className="btn w-full md:w-auto" type="submit">Subscribe</button>
       <label className="flex items-center gap-2 text-sm md:col-span-3"><input name="consent" type="checkbox" required /> I agree to receive emails from THE VELORA.</label>
       {message ? <p className="text-sm md:col-span-3">{message}</p> : null}
     </form>
@@ -194,18 +195,20 @@ function NewsletterForm() {
 }
 
 export function HeroBanner({ settings }: { settings: StoreSettingsData }) {
-  const image = settings.hero.desktopImage.url;
+  const desktopImage = settings.hero.desktopImage.url || "/images/fallbacks/velora-hero.jpg";
+  const mobileImage = settings.hero.mobileImage.url || settings.hero.desktopImage.url || "/images/fallbacks/velora-hero.jpg";
   return (
     <section className="relative overflow-hidden bg-primary text-white">
-      {image ? <img src={image} alt={settings.hero.desktopImage.alt || ""} className="absolute inset-0 hidden h-full w-full object-cover opacity-80 md:block" /> : null}
-      {settings.hero.mobileImage.url ? <img src={settings.hero.mobileImage.url} alt={settings.hero.mobileImage.alt || ""} className="absolute inset-0 h-full w-full object-cover opacity-80 md:hidden" /> : null}
-      <div className="relative mx-auto flex min-h-[70vh] max-w-6xl flex-col justify-end px-4 py-16">
-        <p className="text-sm uppercase tracking-[0.28em] text-gold">THE VELORA</p>
-        <h1 className="mt-3 max-w-xl font-serif text-5xl leading-tight md:text-7xl">{settings.hero.title}</h1>
-        <p className="mt-4 max-w-lg text-lg">{settings.hero.subtitle}</p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link className="btn btn-light" href={settings.hero.primaryCtaHref}>{settings.hero.primaryCtaLabel}</Link>
-          <Link className="btn btn-ghost" href={settings.hero.secondaryCtaHref}>{settings.hero.secondaryCtaLabel}</Link>
+      <ImageWithFallback src={desktopImage} fallbackSrc="/images/fallbacks/velora-hero.jpg" alt={settings.hero.desktopImage.alt || ""} className="absolute inset-0 hidden h-full w-full object-cover opacity-75 md:block" />
+      <ImageWithFallback src={mobileImage} fallbackSrc="/images/fallbacks/velora-hero.jpg" alt={settings.hero.mobileImage.alt || settings.hero.desktopImage.alt || ""} className="absolute inset-0 h-full w-full object-cover opacity-75 md:hidden" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10" />
+      <div className="relative mx-auto flex min-h-[560px] max-w-6xl flex-col justify-end px-4 py-12 sm:min-h-[620px] sm:py-16">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold sm:text-sm">THE VELORA</p>
+        <h1 className="mt-3 max-w-2xl font-serif text-4xl leading-[0.95] sm:text-5xl md:text-7xl">{settings.hero.title}</h1>
+        <p className="mt-4 max-w-xl text-base leading-7 text-white/90 sm:text-lg">{settings.hero.subtitle}</p>
+        <div className="mt-8 grid w-full gap-3 sm:flex sm:w-auto sm:flex-wrap">
+          <Link className="btn btn-light w-full sm:w-auto" href={settings.hero.primaryCtaHref}>{settings.hero.primaryCtaLabel}</Link>
+          <Link className="btn btn-ghost w-full sm:w-auto" href={settings.hero.secondaryCtaHref}>{settings.hero.secondaryCtaLabel}</Link>
         </div>
       </div>
     </section>
@@ -215,12 +218,12 @@ export function HeroBanner({ settings }: { settings: StoreSettingsData }) {
 export function ProductCard({ product }: { product: { slug: string; name: string; pricePaise: number; compareAtPricePaise: number | null; images: { url: string; alt: string }[]; inStock: boolean } }) {
   const image = product.images[0];
   return (
-    <Link href={`/products/${product.slug}`} className="card overflow-hidden">
-      <div className="flex aspect-[3/4] items-center justify-center bg-rose/30">
-        {image ? <img src={image.url} alt={image.alt || product.name} className="h-full w-full object-cover" /> : <span className="font-serif text-5xl text-primary">V</span>}
+    <Link href={`/products/${product.slug}`} className="card group overflow-hidden transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+      <div className="flex aspect-[3/4] items-center justify-center overflow-hidden bg-rose/30">
+        {image ? <ImageWithFallback src={image.url} alt={image.alt || product.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /> : <ImageWithFallback src="/images/fallbacks/product.jpg" alt={product.name} className="h-full w-full object-cover" />}
       </div>
-      <div className="p-4">
-        <h3 className="font-serif text-2xl">{product.name}</h3>
+      <div className="p-4 sm:p-5">
+        <h3 className="font-serif text-xl leading-tight sm:text-2xl">{product.name}</h3>
         <p className="mt-1 text-sm">{new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(product.pricePaise / 100)}</p>
         {!product.inStock ? <p className="text-sm text-muted">Out of stock</p> : null}
       </div>

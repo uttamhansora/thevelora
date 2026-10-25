@@ -67,18 +67,18 @@ export function PurchasePanel({ product }: { product: { id: string; slug: string
         <button type="button" className="btn btn-secondary px-3" onClick={() => setQuantity((value) => Math.min(10, value + 1))} aria-label="Increase quantity">+</button>
       </div>
       <p>{stock > 0 ? `${stock} available` : "Out of stock"}</p>
-      <div className="flex flex-wrap gap-3">
-        <button className="btn" type="button" disabled={disabled} onClick={add}>Add to Cart</button>
-        <button className="btn btn-secondary" type="button" disabled={disabled} onClick={buyNow}>Buy Now</button>
-        <button type="button" className="btn btn-secondary" aria-pressed={saved} onClick={() => store.toggleWishlist({ productId: product.id, slug: product.slug, name: product.name })}>
+      <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap">
+        <button className="btn w-full sm:w-auto" type="button" disabled={disabled} onClick={add}>Add to Cart</button>
+        <button className="btn btn-secondary w-full sm:w-auto" type="button" disabled={disabled} onClick={buyNow}>Buy Now</button>
+        <button type="button" className="btn btn-secondary w-full sm:w-auto" aria-pressed={saved} onClick={() => store.toggleWishlist({ productId: product.id, slug: product.slug, name: product.name })}>
           <Heart size={16} /> {saved ? "Saved" : "Wishlist"}
         </button>
       </div>
       <form onSubmit={checkPin} className="grid gap-2">
         <label htmlFor="pin">Delivery PIN code</label>
-        <div className="flex gap-2">
-          <input id="pin" className="field" inputMode="numeric" maxLength={6} value={pin} onChange={(event) => setPin(event.target.value)} placeholder="6-digit PIN" />
-          <button className="btn btn-secondary" type="submit">Check</button>
+        <div className="flex min-w-0 gap-2">
+          <input id="pin" className="field min-w-0 flex-1" inputMode="numeric" maxLength={6} value={pin} onChange={(event) => setPin(event.target.value)} placeholder="6-digit PIN" />
+          <button className="btn btn-secondary shrink-0" type="submit">Check</button>
         </div>
         {pinMessage ? <p className="text-sm text-muted">{pinMessage}</p> : null}
       </form>

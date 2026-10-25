@@ -59,11 +59,11 @@ export const DEMO_CATEGORIES: DemoTaxonomy[] = [
   { name: "Dupattas & Stoles", slug: "dupattas-stoles", description: "Phulkari, ajrakh, pashmina, and tissue wraps." },
 ];
 
-const img = (seed: string, alt: string) => ({ url: `https://picsum.photos/seed/${seed}/800/1067`, alt });
+const img = (_seed: string, alt: string) => ({ url: "/images/fallbacks/product.jpg", alt });
 
 function build(
   partial: Omit<DemoProduct, "id" | "images" | "sareeLength" | "blousePiece" | "careInstructions" | "lowStockThreshold" | "variants" | "createdAtOffsetDays"> &
-    Partial<Pick<DemoProduct, "sareeLength" | "blousePiece" | "careInstructions" | "lowStockThreshold" | "variants" | "createdAtOffsetDays">>,
+    Partial<Pick<DemoProduct, "images" | "sareeLength" | "blousePiece" | "careInstructions" | "lowStockThreshold" | "variants" | "createdAtOffsetDays">>,
 ): DemoProduct {
   return {
     ...partial,

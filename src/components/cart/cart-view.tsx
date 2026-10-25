@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useStore } from "@/components/storefront/providers";
 import { EmptyState } from "@/components/shared/states";
 import { formatInr } from "@/lib/money";
+import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 
 type QuoteItem = {
   id?: string;
@@ -59,21 +60,21 @@ export function CartView() {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.4fr_0.8fr]">
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
       <div className="grid gap-4">
         {store.cart.map((line) => {
           const priced = quote?.items.find((item) => (item.id === line.productId || item.productId === line.productId) && item.variantSku === line.variantSku);
           return (
-            <article key={`${line.productId}-${line.variantSku}`} className="card flex gap-4 p-4">
-              <div className="flex h-28 w-20 items-center justify-center bg-rose/40">
-                {priced?.images?.[0] ? <img src={priced.images[0].url} alt={priced.images[0].alt || ""} className="h-full w-full object-cover" /> : <span className="font-serif text-2xl">V</span>}
+            <article key={`${line.productId}-${line.variantSku}`} className="card flex gap-3 p-3 sm:gap-4 sm:p-4">
+              <div className="flex h-28 w-20 shrink-0 overflow-hidden rounded-xl bg-rose/40 sm:h-32 sm:w-24">
+                {priced?.images?.[0] ? <ImageWithFallback src={priced.images[0].url} alt={priced.images[0].alt || priced.name || "Product"} className="h-full w-full object-cover" /> : <ImageWithFallback src="/images/fallbacks/product.jpg" alt="Product placeholder" className="h-full w-full object-cover" />}
               </div>
-              <div className="flex-1">
-                <h2 className="font-serif text-2xl">{priced?.name || "Product"}</h2>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-serif text-xl leading-tight sm:text-2xl">{priced?.name || "Product"}</h2>
                 <p className="text-sm text-muted">{priced?.variantName}</p>
                 <p>{priced?.unitPricePaise != null ? formatInr(priced.unitPricePaise) : "Checking price"}</p>
                 {priced?.message ? <p className="text-sm text-primary">{priced.message}</p> : null}
-                <div className="mt-3 flex gap-2">
+                <div className="mt-3 flex flex-wrap items-center gap-2">
                   <button className="btn btn-secondary px-3" type="button" onClick={() => store.updateQuantity(line.productId, line.variantSku, line.quantity - 1)} aria-label="Decrease quantity">-</button>
                   <span>{line.quantity}</span>
                   <button className="btn btn-secondary px-3" type="button" onClick={() => store.updateQuantity(line.productId, line.variantSku, line.quantity + 1)} aria-label="Increase quantity">+</button>
@@ -84,7 +85,7 @@ export function CartView() {
           );
         })}
       </div>
-      <aside className="card h-fit p-5">
+      <aside className="card h-fit p-5 lg:sticky lg:top-24">
         <h2 className="font-serif text-3xl">Summary</h2>
         <label className="mt-4 block text-sm" htmlFor="coupon">Coupon</label>
         <input id="coupon" className="field mt-1" value={coupon} onChange={(event) => setCoupon(event.target.value.toUpperCase())} />

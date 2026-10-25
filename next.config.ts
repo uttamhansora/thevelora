@@ -15,7 +15,7 @@ const securityHeaders = [
       `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"}`,
       "style-src 'self' 'unsafe-inline'",
       // picsum.photos is used only by the local demo seed (npm run seed:demo) for placeholder product imagery.
-      "img-src 'self' data: blob: https://res.cloudinary.com https://picsum.photos https://fastly.picsum.photos",
+      "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://picsum.photos https://fastly.picsum.photos",
       "font-src 'self'",
       "connect-src 'self'",
       "frame-ancestors 'none'",

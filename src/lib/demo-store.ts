@@ -74,8 +74,8 @@ const collectionDocs: DemoTaxonomyDoc[] = DEMO_COLLECTIONS.map((item, index) => 
   seoDescription: item.description,
 }));
 
-export type DemoVariant = { _id: string; name: string; sku: string; priceOverridePaise: number | null; stockQuantity: number; color: string };
-export type DemoProductDoc = Omit<DemoProduct, "categorySlug" | "collectionSlugs"> & {
+export type DemoVariant = DemoProduct["variants"][number] & { _id: string };
+export type DemoProductDoc = Omit<DemoProduct, "categorySlug" | "collectionSlugs" | "variants"> & {
   _id: string;
   categoryId: string | null;
   collectionIds: string[];
@@ -375,7 +375,7 @@ export async function demoCreateOrder(input: {
   const reserved: { sku: string; quantity: number; name: string }[] = [];
   const orderItems = [] as RecordOrder["items"];
   try {
-    for (const line of quote.items as ReturnType<typeof demoToPublic>[] & { variantSku?: string | null; variantName?: string; quantity: number; unitPricePaise: number; lineTotalPaise: number }[]) {
+    for (const line of quote.items as Array<ReturnType<typeof demoToPublic> & { variantSku?: string | null; variantName?: string; quantity: number; unitPricePaise: number; lineTotalPaise: number; available: boolean }>) {
       const doc = demoGetProduct(line.id ?? line.slug);
       if (!doc) throw new AppError("A product in your bag is no longer available.", 409);
       if (!line.available || line.quantity < 1) throw new AppError(`${doc.name} does not have enough stock.`, 409);
