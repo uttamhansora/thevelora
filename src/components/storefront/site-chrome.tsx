@@ -41,17 +41,17 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4">
-        <button className="btn-secondary btn min-h-10 px-3 lg:hidden" aria-label="Open menu" onClick={() => setOpen(true)}><Menu size={18} /></button>
-        <Link href="/" className="min-w-0 truncate font-serif text-xl tracking-[0.12em] text-primary sm:text-2xl sm:tracking-[0.18em]">THE VELORA</Link>
+      <div className="mx-auto flex max-w-6xl items-center gap-1 px-3 py-3 sm:gap-3 sm:px-4">
+        <button className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gold text-primary lg:hidden" aria-label="Open menu" onClick={() => setOpen(true)}><Menu size={19} /></button>
+        <Link href="/" className="min-w-0 flex-1 truncate font-serif text-[1.05rem] tracking-[0.1em] text-primary sm:flex-none sm:text-2xl sm:tracking-[0.18em]">THE VELORA</Link>
         <nav className="ml-6 hidden items-center gap-4 text-sm lg:flex" aria-label="Primary">
           {NAV.map((item) => <Link key={item.href} href={item.href} className="hover:text-primary">{item.label}</Link>)}
         </nav>
-        <div className="ml-auto flex items-center gap-1">
-          <button className="rounded-full p-2" aria-label="Search" onClick={() => setSearchOpen(true)}><Search size={18} /></button>
-          <Link href="/wishlist" className="rounded-full p-2" aria-label={`Wishlist, ${wishlist.length} items`}><Heart size={18} /></Link>
-          <Link href="/account" className="rounded-full p-2" aria-label="Account"><UserRound size={18} /></Link>
-          <button className="relative rounded-full p-2" aria-label={`Cart, ${count} items`} onClick={() => setCartOpen(true)}>
+        <div className="flex shrink-0 items-center gap-0.5 sm:ml-auto sm:gap-1">
+          <button className="grid h-10 w-10 place-items-center rounded-full" aria-label="Search" onClick={() => setSearchOpen(true)}><Search size={18} /></button>
+          <Link href="/wishlist" className="grid h-10 w-10 place-items-center rounded-full max-[360px]:hidden" aria-label={`Wishlist, ${wishlist.length} items`}><Heart size={18} /></Link>
+          <Link href="/account" className="grid h-10 w-10 place-items-center rounded-full max-[440px]:hidden" aria-label="Account"><UserRound size={18} /></Link>
+          <button className="relative grid h-10 w-10 place-items-center rounded-full" aria-label={`Cart, ${count} items`} onClick={() => setCartOpen(true)}>
             <ShoppingBag size={18} />
             {count > 0 ? <span className="absolute right-0 top-0 rounded-full bg-primary px-1.5 text-[10px] text-white">{count}</span> : null}
           </button>
@@ -65,13 +65,23 @@ export function SiteHeader() {
 }
 
 function MobileNavigation({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, []);
+
   return (
-    <div className="fixed inset-0 z-50 bg-text/40 lg:hidden" onClick={onClose}>
-      <nav className="h-full w-80 max-w-[88%] overflow-y-auto bg-background p-6" aria-label="Mobile" onClick={(event) => event.stopPropagation()}>
-        <button className="mb-6" aria-label="Close menu" onClick={onClose}><X /></button>
-        <div className="grid gap-4 text-lg">
-          {NAV.map((item) => <Link key={item.href} href={item.href} onClick={onClose}>{item.label}</Link>)}
+    <div className="fixed inset-0 z-50 bg-text/50 backdrop-blur-sm lg:hidden" onClick={onClose}>
+      <nav className="flex h-full w-[min(22rem,calc(100vw-2rem))] flex-col overflow-y-auto bg-background p-5 shadow-2xl" aria-label="Mobile" onClick={(event) => event.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-border pb-4">
+          <p className="font-serif text-2xl text-primary">Menu</p>
+          <button className="grid h-10 w-10 place-items-center rounded-full border border-border" aria-label="Close menu" onClick={onClose}><X size={20} /></button>
         </div>
+        <div className="mt-4 grid gap-1">
+          {NAV.map((item) => <Link key={item.href} href={item.href} onClick={onClose} className="rounded-xl px-4 py-3 text-lg font-medium transition hover:bg-rose/30">{item.label}</Link>)}
+        </div>
+        <Link href="/collections/sarees" onClick={onClose} className="btn mt-auto w-full rounded-xl py-3">Shop sarees</Link>
       </nav>
     </div>
   );
@@ -118,12 +128,20 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
 
 function CartDrawer({ onClose }: { onClose: () => void }) {
   const { cart } = useStore();
+  const quantity = cart.reduce((total, item) => total + item.quantity, 0);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, []);
+
   return (
     <div className="fixed inset-0 z-50 bg-text/40" role="dialog" aria-modal="true" aria-label="Cart">
-      <aside className="ml-auto h-full w-[min(420px,100%)] bg-background p-6">
-        <div className="flex items-center justify-between"><h2 className="font-serif text-3xl">Your bag</h2><button aria-label="Close cart" onClick={onClose}><X /></button></div>
-        <p className="mt-4 text-muted">{cart.length === 0 ? "Your bag is empty." : `${cart.length} item${cart.length === 1 ? "" : "s"} saved on this device.`}</p>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+      <aside className="ml-auto flex h-full w-full max-w-md flex-col bg-background p-5 sm:p-6">
+        <div className="flex items-center justify-between border-b border-border pb-4"><h2 className="font-serif text-3xl">Your bag</h2><button className="grid h-10 w-10 place-items-center rounded-full border border-border" aria-label="Close cart" onClick={onClose}><X size={20} /></button></div>
+        <p className="mt-5 text-muted">{cart.length === 0 ? "Your bag is empty." : `${quantity} item${quantity === 1 ? "" : "s"} ready for checkout.`}</p>
+        <div className="mt-auto grid gap-3">
           <Link className="btn w-full" href="/cart" onClick={onClose}>View cart</Link>
           <Link className="btn btn-secondary w-full" href="/collections/sarees" onClick={onClose}>Continue shopping</Link>
         </div>
@@ -207,8 +225,8 @@ export function HeroBanner({ settings }: { settings: StoreSettingsData }) {
         <h1 className="mt-3 max-w-2xl font-serif text-4xl leading-[0.95] sm:text-5xl md:text-7xl">{settings.hero.title}</h1>
         <p className="mt-4 max-w-xl text-base leading-7 text-white/90 sm:text-lg">{settings.hero.subtitle}</p>
         <div className="mt-8 grid w-full gap-3 sm:flex sm:w-auto sm:flex-wrap">
-          <Link className="btn btn-light w-full sm:w-auto" href={settings.hero.primaryCtaHref}>{settings.hero.primaryCtaLabel}</Link>
-          <Link className="btn btn-ghost w-full sm:w-auto" href={settings.hero.secondaryCtaHref}>{settings.hero.secondaryCtaLabel}</Link>
+          <Link className="btn btn-light h-14 w-full rounded-xl px-6 text-sm uppercase tracking-[0.08em] shadow-xl sm:min-w-52 sm:w-auto" href={settings.hero.primaryCtaHref}>{settings.hero.primaryCtaLabel}</Link>
+          <Link className="btn btn-ghost h-14 w-full rounded-xl border-white/70 bg-black/20 px-6 text-sm uppercase tracking-[0.08em] backdrop-blur-sm sm:min-w-52 sm:w-auto" href={settings.hero.secondaryCtaHref}>{settings.hero.secondaryCtaLabel}</Link>
         </div>
       </div>
     </section>

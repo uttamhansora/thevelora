@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Minus, Plus, Trash2 } from "lucide-react";
 import { useStore } from "@/components/storefront/providers";
 import { EmptyState } from "@/components/shared/states";
 import { formatInr } from "@/lib/money";
@@ -65,37 +66,39 @@ export function CartView() {
         {store.cart.map((line) => {
           const priced = quote?.items.find((item) => (item.id === line.productId || item.productId === line.productId) && item.variantSku === line.variantSku);
           return (
-            <article key={`${line.productId}-${line.variantSku}`} className="card flex gap-3 p-3 sm:gap-4 sm:p-4">
+            <article key={`${line.productId}-${line.variantSku}`} className="card flex gap-3 p-3 sm:gap-4 sm:p-5">
               <div className="flex h-28 w-20 shrink-0 overflow-hidden rounded-xl bg-rose/40 sm:h-32 sm:w-24">
                 {priced?.images?.[0] ? <ImageWithFallback src={priced.images[0].url} alt={priced.images[0].alt || priced.name || "Product"} className="h-full w-full object-cover" /> : <ImageWithFallback src="/images/fallbacks/product.jpg" alt="Product placeholder" className="h-full w-full object-cover" />}
               </div>
               <div className="min-w-0 flex-1">
                 <h2 className="font-serif text-xl leading-tight sm:text-2xl">{priced?.name || "Product"}</h2>
                 <p className="text-sm text-muted">{priced?.variantName}</p>
-                <p>{priced?.unitPricePaise != null ? formatInr(priced.unitPricePaise) : "Checking price"}</p>
+                <p className="mt-1 font-semibold">{priced?.unitPricePaise != null ? formatInr(priced.unitPricePaise) : "Checking price"}</p>
                 {priced?.message ? <p className="text-sm text-primary">{priced.message}</p> : null}
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <button className="btn btn-secondary px-3" type="button" onClick={() => store.updateQuantity(line.productId, line.variantSku, line.quantity - 1)} aria-label="Decrease quantity">-</button>
-                  <span>{line.quantity}</span>
-                  <button className="btn btn-secondary px-3" type="button" onClick={() => store.updateQuantity(line.productId, line.variantSku, line.quantity + 1)} aria-label="Increase quantity">+</button>
-                  <button className="text-sm underline" type="button" onClick={() => store.removeFromCart(line.productId, line.variantSku)}>Remove</button>
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <div className="inline-flex items-center rounded-xl border border-border bg-background p-1">
+                    <button className="grid h-9 w-9 place-items-center rounded-lg text-primary hover:bg-rose/30" type="button" onClick={() => store.updateQuantity(line.productId, line.variantSku, line.quantity - 1)} aria-label="Decrease quantity"><Minus size={16} /></button>
+                    <span className="grid h-9 min-w-9 place-items-center text-sm font-semibold" aria-label={`Quantity: ${line.quantity}`}>{line.quantity}</span>
+                    <button className="grid h-9 w-9 place-items-center rounded-lg text-primary hover:bg-rose/30" type="button" onClick={() => store.updateQuantity(line.productId, line.variantSku, line.quantity + 1)} aria-label="Increase quantity"><Plus size={16} /></button>
+                  </div>
+                  <button className="inline-flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline" type="button" onClick={() => store.removeFromCart(line.productId, line.variantSku)}><Trash2 size={15} /> Remove</button>
                 </div>
               </div>
             </article>
           );
         })}
       </div>
-      <aside className="card h-fit p-5 lg:sticky lg:top-24">
+      <aside className="card h-fit p-5 sm:p-6 lg:sticky lg:top-24">
         <h2 className="font-serif text-3xl">Summary</h2>
         <label className="mt-4 block text-sm" htmlFor="coupon">Coupon</label>
-        <input id="coupon" className="field mt-1" value={coupon} onChange={(event) => setCoupon(event.target.value.toUpperCase())} />
+        <input id="coupon" className="field mt-1" placeholder="Enter discount code" value={coupon} onChange={(event) => setCoupon(event.target.value.toUpperCase())} />
         {quote?.couponMessage ? <p className="mt-2 text-sm text-primary">{quote.couponMessage}</p> : null}
         {error ? <p className="mt-2 text-sm text-primary">{error}</p> : null}
-        <dl className="mt-4 grid gap-2 text-sm">
+        <dl className="mt-5 grid gap-3 text-sm">
           <div className="flex justify-between"><dt>Subtotal</dt><dd>{quote ? formatInr(quote.totals.subtotalPaise) : "—"}</dd></div>
           <div className="flex justify-between"><dt>Discount</dt><dd>{quote ? formatInr(quote.totals.discountPaise) : "—"}</dd></div>
           <div className="flex justify-between"><dt>Shipping</dt><dd>{quote ? formatInr(quote.totals.shippingCostPaise) : "—"}</dd></div>
-          <div className="flex justify-between text-base"><dt>Total</dt><dd>{quote ? formatInr(quote.totals.totalPaise) : "—"}</dd></div>
+          <div className="mt-1 flex justify-between border-t border-border pt-4 text-lg font-semibold"><dt>Total</dt><dd>{quote ? formatInr(quote.totals.totalPaise) : "—"}</dd></div>
         </dl>
         <p className="mt-3 text-xs text-muted">The final amount is calculated again on the server when the order is created.</p>
         <Link className="btn mt-4 w-full" href="/checkout">Proceed to Checkout</Link>
