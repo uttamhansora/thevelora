@@ -3,14 +3,12 @@ import { AppError } from "@/lib/errors";
 import { assertSameOrigin, isAllowedOrigin } from "@/lib/security/origin";
 
 const originalAppUrl = process.env.APP_URL;
-const originalNodeEnv = process.env.NODE_ENV;
 const originalVercelUrl = process.env.VERCEL_URL;
 const originalProductionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
 const originalBranchUrl = process.env.VERCEL_BRANCH_URL;
 
 afterEach(() => {
   process.env.APP_URL = originalAppUrl;
-  process.env.NODE_ENV = originalNodeEnv;
   if (originalVercelUrl === undefined) delete process.env.VERCEL_URL;
   else process.env.VERCEL_URL = originalVercelUrl;
   if (originalProductionUrl === undefined) delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
@@ -20,8 +18,7 @@ afterEach(() => {
 });
 
 describe("same-origin checks", () => {
-  it("allows the configured site and its www or apex twin in production", () => {
-    process.env.NODE_ENV = "production";
+  it("allows the configured site and its www or apex twin", () => {
     process.env.APP_URL = "https://thevelora.website";
     expect(isAllowedOrigin("https://thevelora.website")).toBe(true);
     expect(isAllowedOrigin("https://www.thevelora.website")).toBe(true);
@@ -29,7 +26,6 @@ describe("same-origin checks", () => {
   });
 
   it("allows the host that received the request when APP_URL is still localhost", () => {
-    process.env.NODE_ENV = "production";
     process.env.APP_URL = "http://localhost:3000";
     const request = new Request("https://www.thevelora.website/api/admin/login", {
       method: "POST",
@@ -43,7 +39,6 @@ describe("same-origin checks", () => {
   });
 
   it("rejects a different site posting to the store", () => {
-    process.env.NODE_ENV = "production";
     process.env.APP_URL = "https://www.thevelora.website";
     const request = new Request("https://www.thevelora.website/api/admin/login", {
       method: "POST",
