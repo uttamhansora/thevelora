@@ -1,6 +1,16 @@
+import dns from "dns";
 import mongoose from "mongoose";
 import { DatabaseConfigError } from "@/lib/errors";
 import { redactSecrets } from "@/lib/security/redact";
+
+if (typeof dns.setDefaultResultOrder === "function") {
+  dns.setDefaultResultOrder("ipv4first");
+}
+try {
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+} catch {
+  // fallback for environments where setServers is restricted
+}
 
 type MongooseCache = {
   conn: typeof mongoose | null;

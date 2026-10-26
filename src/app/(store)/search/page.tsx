@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ProductCard } from "@/components/storefront/site-chrome";
+import { ProductCard } from "@/components/product/product-card";
 import { EmptyState } from "@/components/shared/states";
 import { sanitizeSearch } from "@/lib/search";
 import { listPublicProducts } from "@/services/catalog";

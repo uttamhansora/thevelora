@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { Heart, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
+import { Heart, Menu, Minus, Plus, Search, ShoppingBag, Trash2, UserRound, X } from "lucide-react";
 import { useStore } from "@/components/storefront/providers";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { PriceDisplay } from "@/components/shared/price-display";
-import { discountPercent } from "@/lib/money";
+import { discountPercent, formatInr } from "@/lib/money";
 import type { StoreSettingsData } from "@/lib/validation/settings";
 
 const BRAND_SOCIAL = {
@@ -85,34 +85,105 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
-      <div className="mx-auto grid max-w-6xl grid-cols-[2.5rem_1fr_2.5rem] items-center gap-1 px-3 py-3 sm:px-4 lg:flex lg:items-center lg:gap-3">
-        <button type="button" className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gold text-primary lg:hidden" aria-label="Open menu" aria-expanded={open} onClick={() => setOpen(true)}><Menu size={19} /></button>
-        <Link href="/" className="col-start-2 flex items-center justify-center gap-2 lg:col-auto lg:justify-start">
+      <div className="mx-auto grid max-w-6xl grid-cols-[4.5rem_1fr_4.5rem] items-center gap-2 px-4 py-2 sm:grid-cols-[6.5rem_1fr_6.5rem] sm:px-6 sm:py-2.5 lg:flex lg:items-center lg:justify-between lg:gap-4">
+        {/* Mobile / Tablet Menu Button (Left) */}
+        <div className="flex items-center lg:hidden">
+          <button
+            type="button"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gold/70 text-primary transition hover:bg-gold/15 active:scale-95"
+            aria-label="Open menu"
+            aria-expanded={open}
+            onClick={() => setOpen(true)}
+          >
+            <Menu size={20} />
+          </button>
+        </div>
+
+        {/* Logo Lockup: Centered on Mobile/Tablet, Left on Desktop */}
+        <Link
+          href="/"
+          className="group col-start-2 flex items-center justify-center gap-2.5 transition-transform hover:opacity-95 sm:gap-3.5 lg:col-auto lg:justify-start"
+        >
           <img
             src="/images/brand/velora-logo.jpg"
-            alt=""
-            className="h-9 w-9 shrink-0 rounded-md object-cover ring-1 ring-border sm:h-11 sm:w-11"
-            width={44}
-            height={44}
+            alt="The Velora"
+            className="h-12 w-12 shrink-0 rounded-xl object-cover shadow-sm ring-1 ring-gold/40 transition-transform duration-200 group-hover:scale-105 sm:h-14 sm:w-14 lg:h-16 lg:w-16"
+            width={64}
+            height={64}
           />
-          <span className="flex flex-col items-center leading-none lg:items-start">
-            <span className="font-serif text-[0.62rem] font-medium uppercase tracking-[0.32em] text-gold sm:text-xs lg:text-sm lg:tracking-[0.28em]">The</span>
-            <span className="mt-0.5 font-serif text-lg font-semibold tracking-[0.16em] text-primary sm:text-2xl lg:tracking-[0.14em]">Velora</span>
+          <span className="flex items-end font-serif select-none" aria-label="The Velora">
+            <span className="font-serif text-[1.85rem] font-semibold tracking-[0.05em] text-primary sm:text-[2.2rem] lg:text-[2.5rem] leading-none">
+              Vel
+            </span>
+            <span className="inline-flex flex-col items-center leading-none">
+              <span className="font-serif text-[10px] font-bold uppercase tracking-[0.28em] text-gold sm:text-[11px] lg:text-[13px] leading-none -mb-1 sm:-mb-1.5 pl-0.5">
+                THE
+              </span>
+              <span className="font-serif text-[1.85rem] font-semibold tracking-[0.05em] text-primary sm:text-[2.2rem] lg:text-[2.5rem] leading-none">
+                ora
+              </span>
+            </span>
           </span>
         </Link>
-        <nav className="ml-6 hidden items-center gap-4 text-sm lg:flex" aria-label="Primary">
-          {NAV.map((item) => <Link key={item.href} href={item.href} className="hover:text-primary">{item.label}</Link>)}
+
+        {/* Desktop Navigation Menu: Preserving refined text-sm font-medium */}
+        <nav className="ml-6 hidden items-center gap-4 text-sm font-medium lg:flex xl:gap-6" aria-label="Primary">
+          {NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="relative py-1 text-text/80 transition-colors hover:text-primary after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-gold after:transition-all hover:after:w-full"
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
-        <div className="col-start-3 flex items-center justify-end gap-0.5 lg:col-auto lg:ml-auto lg:gap-1">
-          <button className="grid h-10 w-10 place-items-center rounded-full" aria-label="Search" onClick={() => setSearchOpen(true)}><Search size={18} /></button>
-          <Link href="/wishlist" className="hidden h-10 w-10 place-items-center rounded-full lg:grid" aria-label={`Wishlist, ${wishlist.length} items`}><Heart size={18} /></Link>
-          <Link href={accountHref} className="hidden max-w-[11rem] items-center gap-1 rounded-full py-1 pl-1 pr-3 lg:flex" aria-label={accountLabel}>
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full"><UserRound size={18} /></span>
+
+        {/* Action Controls (Search, Wishlist, Account, Cart) */}
+        <div className="col-start-3 flex items-center justify-end gap-1 sm:gap-1.5 lg:col-auto lg:ml-auto">
+          <button
+            className="grid h-10 w-10 place-items-center rounded-full text-text transition hover:bg-gold/15 hover:text-primary"
+            aria-label="Search"
+            onClick={() => setSearchOpen(true)}
+          >
+            <Search size={19} />
+          </button>
+
+          <Link
+            href="/wishlist"
+            className="relative hidden h-10 w-10 place-items-center rounded-full text-text transition hover:bg-gold/15 hover:text-primary sm:grid"
+            aria-label={`Wishlist, ${wishlist.length} items`}
+          >
+            <Heart size={19} />
+            {wishlist.length > 0 ? (
+              <span className="absolute 0 top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-white shadow-sm">
+                {wishlist.length}
+              </span>
+            ) : null}
+          </Link>
+
+          <Link
+            href={accountHref}
+            className="hidden max-w-[11rem] items-center gap-1.5 rounded-full py-1 pl-1 pr-3 text-text transition hover:bg-gold/15 hover:text-primary lg:flex"
+            aria-label={accountLabel}
+          >
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full">
+              <UserRound size={19} />
+            </span>
             {signedIn ? <span className="truncate text-sm font-medium">{customerName}</span> : null}
           </Link>
-          <button className="relative hidden h-10 w-10 place-items-center rounded-full lg:grid" aria-label={`Cart, ${count} items`} onClick={() => setCartOpen(true)}>
-            <ShoppingBag size={18} />
-            {count > 0 ? <span className="absolute right-0 top-0 rounded-full bg-primary px-1.5 text-[10px] text-white">{count}</span> : null}
+
+          <button
+            className="relative grid h-10 w-10 place-items-center rounded-full text-text transition hover:bg-gold/15 hover:text-primary"
+            aria-label={`Cart, ${count} items`}
+            onClick={() => setCartOpen(true)}
+          >
+            <ShoppingBag size={19} />
+            {count > 0 ? (
+              <span className="absolute 0 top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white shadow-sm">
+                {count}
+              </span>
+            ) : null}
           </button>
         </div>
       </div>
@@ -171,22 +242,65 @@ function MobileNavigation({
           onClick={(event) => event.stopPropagation()}
         >
           <div className="flex items-center justify-between border-b border-border pb-4">
-            <p className="font-serif text-2xl text-primary">Menu</p>
-            <button type="button" className="grid h-10 w-10 place-items-center rounded-full border border-border" aria-label="Close menu" onClick={onClose}><X size={20} /></button>
+            <div className="flex items-center gap-2.5">
+              <img
+                src="/images/brand/velora-logo.jpg"
+                alt="The Velora"
+                className="h-11 w-11 shrink-0 rounded-xl object-cover ring-1 ring-gold/40 shadow-sm"
+                width={44}
+                height={44}
+              />
+              <span className="flex items-end font-serif select-none" aria-label="The Velora">
+                <span className="font-serif text-2xl font-semibold tracking-[0.05em] text-primary leading-none">
+                  Vel
+                </span>
+                <span className="inline-flex flex-col items-center leading-none">
+                  <span className="font-serif text-[9px] font-bold uppercase tracking-[0.26em] text-gold leading-none -mb-1 pl-0.5">
+                    THE
+                  </span>
+                  <span className="font-serif text-2xl font-semibold tracking-[0.05em] text-primary leading-none">
+                    ora
+                  </span>
+                </span>
+              </span>
+            </div>
+            <button type="button" className="grid h-10 w-10 place-items-center rounded-full border border-border text-text hover:bg-rose/20 active:scale-95 transition" aria-label="Close menu" onClick={onClose}><X size={20} /></button>
           </div>
           <div className="mt-4 grid gap-1">
-            {NAV.map((item) => <Link key={item.href} href={item.href} onClick={onClose} className="rounded-xl px-4 py-3 text-lg font-medium transition hover:bg-rose/30">{item.label}</Link>)}
+            {NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                className="-mx-4 flex items-center rounded-xl px-4 py-2.5 text-lg font-medium text-text transition hover:bg-rose/30 hover:text-primary active:scale-[0.99]"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
           <div className="mt-6 grid gap-1 border-t border-border pt-4">
-            <Link href="/wishlist" onClick={onClose} className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition hover:bg-rose/30">
+            <Link
+              href="/wishlist"
+              onClick={onClose}
+              className="-mx-4 flex items-center gap-3 rounded-xl px-4 py-2.5 text-base font-medium text-text transition hover:bg-rose/30 hover:text-primary"
+            >
               <Heart size={18} />
               <span>Wishlist{wishlistCount > 0 ? ` (${wishlistCount})` : ""}</span>
             </Link>
-            <Link href={accountHref} onClick={onClose} className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition hover:bg-rose/30" aria-label={accountLabel}>
+            <Link
+              href={accountHref}
+              onClick={onClose}
+              className="-mx-4 flex items-center gap-3 rounded-xl px-4 py-2.5 text-base font-medium text-text transition hover:bg-rose/30 hover:text-primary"
+              aria-label={accountLabel}
+            >
               <UserRound size={18} />
               <span className="truncate">{signedIn ? customerName : "Sign in"}</span>
             </Link>
-            <button type="button" onClick={onOpenCart} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-base font-medium transition hover:bg-rose/30">
+            <button
+              type="button"
+              onClick={onOpenCart}
+              className="-mx-4 flex w-[calc(100%+2rem)] items-center gap-3 rounded-xl px-4 py-2.5 text-left text-base font-medium text-text transition hover:bg-rose/30 hover:text-primary"
+            >
               <ShoppingBag size={18} />
               <span>Your bag{cartCount > 0 ? ` (${cartCount})` : ""}</span>
             </button>
@@ -239,32 +353,292 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
   );
 }
 
+type DrawerQuoteItem = {
+  id?: string;
+  productId?: string;
+  name?: string;
+  slug?: string;
+  variantSku?: string | null;
+  variantName?: string;
+  images?: { url: string; alt: string }[];
+  available?: boolean;
+  quantity?: number;
+  unitPricePaise?: number;
+  lineTotalPaise?: number;
+  message?: string;
+};
+
+type DrawerQuote = {
+  items: DrawerQuoteItem[];
+  totals: {
+    subtotalPaise: number;
+    discountPaise: number;
+    shippingCostPaise: number;
+    taxPaise: number;
+    totalPaise: number;
+  };
+  couponMessage?: string;
+};
+
 function CartDrawer({ onClose }: { onClose: () => void }) {
-  const { cart } = useStore();
+  const store = useStore();
+  const { cart, updateQuantity, removeFromCart } = store;
+  const [quote, setQuote] = useState<DrawerQuote | null>(null);
   const quantity = cart.reduce((total, item) => total + item.quantity, 0);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previousOverflow; };
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
   }, []);
+
+  useEffect(() => {
+    if (cart.length === 0) {
+      setQuote(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const timer = setTimeout(() => {
+      fetch("/api/cart/quote", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ items: cart }),
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (!cancelled && data) {
+            setQuote(data);
+          }
+        })
+        .catch(() => {});
+    }, 120);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [cart]);
+
+  const subtotalPaise =
+    quote?.totals?.subtotalPaise ??
+    cart.reduce((sum, line) => {
+      const match = quote?.items?.find(
+        (item) => item.id === line.productId || item.productId === line.productId
+      );
+      return sum + (match?.unitPricePaise ?? 0) * line.quantity;
+    }, 0);
 
   return (
     <BodyPortal>
-      <div className="fixed inset-0 z-[100] flex justify-end bg-text/55" role="dialog" aria-modal="true" aria-label="Cart" onClick={onClose}>
+      <div
+        className="fixed inset-0 z-[100] flex justify-end bg-text/55"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Your bag"
+        onClick={onClose}
+      >
         <aside
-          className="flex h-full w-full max-w-md flex-col bg-background p-5 shadow-[-12px_0_40px_rgba(48,37,31,0.12)] sm:p-6"
+          className="flex h-full w-full max-w-md flex-col bg-background shadow-[-12px_0_40px_rgba(48,37,31,0.15)]"
           onClick={(event) => event.stopPropagation()}
         >
-          <div className="flex items-center justify-between border-b border-border pb-4">
-            <h2 className="font-serif text-3xl text-text">Your bag</h2>
-            <button type="button" className="grid h-10 w-10 place-items-center rounded-full border border-border" aria-label="Close cart" onClick={onClose}><X size={20} /></button>
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-border p-5 sm:p-6 pb-4">
+            <div>
+              <h2 className="font-serif text-3xl text-text">Your bag</h2>
+              <p className="mt-1 text-xs text-muted">
+                {cart.length === 0
+                  ? "Your bag is currently empty"
+                  : `${quantity} item${quantity === 1 ? "" : "s"} ready for checkout`}
+              </p>
+            </div>
+            <button
+              type="button"
+              className="grid h-10 w-10 place-items-center rounded-full border border-border text-text transition hover:bg-rose/20 active:scale-95"
+              aria-label="Close cart"
+              onClick={onClose}
+            >
+              <X size={20} />
+            </button>
           </div>
-          <p className="mt-5 text-muted">{cart.length === 0 ? "Your bag is empty." : `${quantity} item${quantity === 1 ? "" : "s"} ready for checkout.`}</p>
-          <div className="mt-auto grid gap-3 pt-8">
-            <Link className="btn w-full" href="/cart" onClick={onClose}>View cart</Link>
-            <Link className="btn btn-secondary w-full" href="/collections/sarees" onClick={onClose}>Continue shopping</Link>
-          </div>
+
+          {/* Body Content */}
+          {cart.length === 0 ? (
+            <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
+              <div className="grid h-20 w-20 place-items-center rounded-full bg-rose/30 text-primary">
+                <ShoppingBag size={34} />
+              </div>
+              <h3 className="mt-5 font-serif text-2xl text-text">Your bag is empty</h3>
+              <p className="mt-2 max-w-xs text-sm text-muted">
+                Browse our curated catalogue of handwoven sarees to find your next drape.
+              </p>
+              <Link
+                className="btn mt-6 px-6 py-2.5 text-sm"
+                href="/collections/sarees"
+                onClick={onClose}
+              >
+                Explore collection
+              </Link>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-3.5">
+              {cart.map((line) => {
+                const priced = quote?.items?.find(
+                  (item) =>
+                    (item.id === line.productId || item.productId === line.productId) &&
+                    (item.variantSku ?? null) === (line.variantSku ?? null)
+                );
+                const image = priced?.images?.[0];
+                const name = priced?.name || "Product";
+                const slug = priced?.slug;
+                const unitPrice = priced?.unitPricePaise;
+                const lineTotal = priced?.lineTotalPaise ?? (unitPrice ? unitPrice * line.quantity : null);
+
+                return (
+                  <article
+                    key={`${line.productId}-${line.variantSku ?? "default"}`}
+                    className="group relative flex gap-3.5 rounded-2xl border border-border/80 bg-surface p-3.5 shadow-sm transition hover:border-gold/50"
+                  >
+                    {/* Thumbnail Image */}
+                    <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-rose/30">
+                      {slug ? (
+                        <Link href={`/products/${slug}`} onClick={onClose} className="block h-full w-full">
+                          <ImageWithFallback
+                            src={image?.url || "/images/fallbacks/product.jpg"}
+                            alt={image?.alt || name}
+                            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                          />
+                        </Link>
+                      ) : (
+                        <ImageWithFallback
+                          src={image?.url || "/images/fallbacks/product.jpg"}
+                          alt={image?.alt || name}
+                          className="h-full w-full object-cover"
+                        />
+                      )}
+                    </div>
+
+                    {/* Details */}
+                    <div className="flex flex-1 flex-col justify-between min-w-0">
+                      <div>
+                        <div className="flex items-start justify-between gap-2">
+                          {slug ? (
+                            <Link
+                              href={`/products/${slug}`}
+                              onClick={onClose}
+                              className="font-serif text-base font-medium leading-snug text-text transition hover:text-primary line-clamp-2"
+                            >
+                              {name}
+                            </Link>
+                          ) : (
+                            <h3 className="font-serif text-base font-medium leading-snug text-text line-clamp-2">
+                              {name}
+                            </h3>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeFromCart(line.productId, line.variantSku)}
+                            className="p-1 -mr-1 text-muted transition hover:text-primary"
+                            aria-label={`Remove ${name} from bag`}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+
+                        {priced?.variantName ? (
+                          <p className="mt-0.5 text-xs text-muted">{priced.variantName}</p>
+                        ) : null}
+
+                        {/* Price Display */}
+                        <div className="mt-1 flex items-baseline gap-2">
+                          <span className="text-sm font-bold text-text">
+                            {lineTotal != null ? formatInr(lineTotal) : "..."}
+                          </span>
+                          {line.quantity > 1 && unitPrice != null ? (
+                            <span className="text-[11px] text-muted">
+                              ({formatInr(unitPrice)} each)
+                            </span>
+                          ) : null}
+                        </div>
+
+                        {priced?.message ? (
+                          <p className="mt-1 text-xs text-primary font-medium">{priced.message}</p>
+                        ) : null}
+                      </div>
+
+                      {/* Quantity Controls */}
+                      <div className="mt-2.5 flex items-center justify-between">
+                        <div className="inline-flex items-center rounded-lg border border-border bg-background/80 p-0.5 shadow-inner">
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(line.productId, line.variantSku, line.quantity - 1)}
+                            className="grid h-7 w-7 place-items-center rounded text-text transition hover:bg-rose/30 hover:text-primary disabled:opacity-40"
+                            aria-label="Decrease quantity"
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <span className="grid h-7 min-w-7 place-items-center text-xs font-semibold text-text">
+                            {line.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(line.productId, line.variantSku, line.quantity + 1)}
+                            className="grid h-7 w-7 place-items-center rounded text-text transition hover:bg-rose/30 hover:text-primary"
+                            aria-label="Increase quantity"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Footer with subtotal and actions */}
+          {cart.length > 0 ? (
+            <div className="border-t border-border bg-surface/50 p-5 sm:p-6 pt-4">
+              <div className="flex items-baseline justify-between mb-1.5">
+                <span className="text-sm font-medium text-text">Subtotal</span>
+                <span className="font-serif text-2xl font-bold text-text">
+                  {subtotalPaise > 0 ? formatInr(subtotalPaise) : "..."}
+                </span>
+              </div>
+              <p className="text-xs text-muted mb-4">
+                Shipping and taxes calculated at checkout.
+              </p>
+              <div className="grid gap-2.5">
+                <Link
+                  className="btn w-full py-3 text-sm font-semibold tracking-wide shadow-md"
+                  href="/checkout"
+                  onClick={onClose}
+                >
+                  Proceed to checkout
+                </Link>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    className="btn btn-secondary w-full py-2.5 text-xs font-semibold"
+                    href="/cart"
+                    onClick={onClose}
+                  >
+                    View cart
+                  </Link>
+                  <button
+                    type="button"
+                    className="btn btn-secondary w-full py-2.5 text-xs font-semibold"
+                    onClick={onClose}
+                  >
+                    Continue shopping
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </aside>
       </div>
     </BodyPortal>
@@ -274,7 +648,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
 export function SiteFooter({ settings }: { settings: StoreSettingsData }) {
   return (
     <footer className="mt-16 border-t border-border bg-surface">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-4">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 py-12 md:grid-cols-4">
         <div>
           <p className="font-serif text-3xl text-primary">THE VELORA</p>
           <p className="mt-2 text-muted">Elegance Woven for You.</p>
@@ -339,7 +713,7 @@ function NewsletterForm() {
     setMessage(response.ok ? "You are subscribed." : data.error || "Please check the form.");
   }
   return (
-    <form onSubmit={onSubmit} className="mx-auto grid max-w-6xl gap-3 border-t border-border px-4 py-8 md:grid-cols-[1fr_auto_auto] md:items-center">
+    <form onSubmit={onSubmit} className="mx-auto grid max-w-6xl gap-3 border-t border-border px-4 sm:px-6 py-8 md:grid-cols-[1fr_auto_auto] md:items-center">
       <div>
         <label htmlFor="newsletter-email" className="font-serif text-2xl">Notes from the atelier</label>
         <p className="text-sm text-muted">Occasional collection news. No account is required.</p>
@@ -383,75 +757,4 @@ export function HeroBanner({ settings }: { settings: StoreSettingsData }) {
   );
 }
 
-export type ProductCardData = {
-  id?: string;
-  slug: string;
-  name: string;
-  pricePaise: number;
-  compareAtPricePaise: number | null;
-  images: { url: string; alt: string }[];
-  inStock: boolean;
-  variants?: { sku: string }[];
-};
-
-export function ProductCard({ product, showActions = false }: { product: ProductCardData; showActions?: boolean }) {
-  const store = useStore();
-  const image = product.images[0];
-  const discount = discountPercent(product.pricePaise, product.compareAtPricePaise);
-  const saved = product.id ? store.wishlist.some((item) => item.productId === product.id) : false;
-  const defaultVariantSku = product.variants?.[0]?.sku ?? null;
-
-  function addToCart() {
-    if (!product.id || !product.inStock) return;
-    store.addToCart({
-      productId: product.id,
-      variantSku: product.variants && product.variants.length > 0 ? defaultVariantSku : null,
-      quantity: 1,
-    });
-    store.notify("Added to bag.");
-  }
-
-  function toggleWishlist() {
-    if (!product.id) return;
-    store.toggleWishlist({ productId: product.id, slug: product.slug, name: product.name });
-    store.notify(saved ? "Removed from wishlist." : "Saved to wishlist.");
-  }
-
-  return (
-    <article className="card group flex h-full flex-col overflow-hidden transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-      <div className="relative overflow-hidden bg-rose/30">
-        {discount != null ? <span className="pointer-events-none absolute left-2 top-2 z-10 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white sm:text-xs">{discount}% off</span> : null}
-        {showActions && product.id ? (
-          <button
-            type="button"
-            className={`absolute right-2 top-2 z-10 grid h-8 w-8 place-items-center rounded-full border shadow-sm transition ${saved ? "border-primary bg-primary text-white" : "border-border bg-surface/95 text-primary"}`}
-            aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
-            aria-pressed={saved}
-            onClick={toggleWishlist}
-          >
-            <Heart size={15} fill={saved ? "currentColor" : "none"} />
-          </button>
-        ) : null}
-        <Link href={`/products/${product.slug}`} className="block aspect-[3/4]">
-          {image ? <ImageWithFallback src={image.url} alt={image.alt || product.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /> : <ImageWithFallback src="/images/fallbacks/product.jpg" alt={product.name} className="h-full w-full object-cover" />}
-        </Link>
-      </div>
-      <div className="flex flex-1 flex-col p-3 sm:p-4">
-        <Link href={`/products/${product.slug}`} className="font-serif text-base leading-tight sm:text-xl">{product.name}</Link>
-        <PriceDisplay className="mt-1" compact pricePaise={product.pricePaise} compareAtPricePaise={product.compareAtPricePaise} />
-        {!product.inStock ? <p className="mt-1 text-xs text-muted sm:text-sm">Out of stock</p> : null}
-        {showActions ? (
-          <button
-            type="button"
-            className="btn btn-secondary mt-3 w-full gap-1.5 py-2 text-xs sm:text-sm"
-            disabled={!product.inStock || !product.id}
-            onClick={addToCart}
-          >
-            <ShoppingBag size={15} />
-            Add to bag
-          </button>
-        ) : null}
-      </div>
-    </article>
-  );
-}
+export { ProductCard, type ProductCardData, type ProductCardProps } from "@/components/product/product-card";

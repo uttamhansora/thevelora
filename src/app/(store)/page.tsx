@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { HeroBanner, ProductCard } from "@/components/storefront/site-chrome";
+import { HeroBanner } from "@/components/storefront/site-chrome";
+import { ProductCard } from "@/components/product/product-card";
 import { EmptyState } from "@/components/shared/states";
 import { homeRails } from "@/services/catalog";
 import { getStoreSettingsSafe } from "@/services/settings";
@@ -27,7 +28,7 @@ export default async function HomePage() {
     <div>
       <HeroBanner settings={settings} />
       {settings.sections.categories ? (
-        <section className="mx-auto max-w-6xl px-4 py-14">
+        <section className="mx-auto max-w-6xl px-4 sm:px-6 py-14">
           <h2 className="font-serif text-4xl">Shop by category</h2>
           <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             {settings.categoryCards.map((card, index) => (
@@ -41,11 +42,11 @@ export default async function HomePage() {
           </div>
         </section>
       ) : null}
-      {settings.sections.bestSellers ? <ProductRail title="Best sellers" products={rails.best} empty="Bestsellers appear here when an administrator marks published products, or after verified sales are recorded." /> : null}
-      {settings.sections.newArrivals ? <ProductRail title="New arrivals" products={rails.newest} empty="New sarees will appear here after they are published." /> : null}
-      {settings.sections.featured ? <ProductRail title="Featured collections" products={rails.featured} empty="Featured products will appear here when they are marked in the catalogue." /> : null}
+      {settings.sections.bestSellers ? <ProductRail title="Best Sellers" products={rails.best} empty="Bestsellers appear here when an administrator marks published products, or after verified sales are recorded." /> : null}
+      {settings.sections.newArrivals ? <ProductRail title="New Arrivals" products={rails.newest} empty="New sarees will appear here after they are published." /> : null}
+      {settings.sections.featured ? <ProductRail title="Featured Collections" products={rails.featured} empty="Featured products will appear here when they are marked in the catalogue." /> : null}
       {settings.sections.brandStory ? (
-        <section className="mx-auto grid max-w-6xl gap-8 px-4 py-8 md:grid-cols-2">
+        <section className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 py-8 md:grid-cols-2">
           <div>
             <h2 className="font-serif text-4xl">{settings.brandStory.title}</h2>
             <p className="mt-4 leading-7 text-muted">{settings.brandStory.body}</p>
@@ -56,12 +57,12 @@ export default async function HomePage() {
         </section>
       ) : null}
       {settings.sections.whyShop ? (
-        <section className="mx-auto grid max-w-6xl gap-4 px-4 py-8 md:grid-cols-2">
+        <section className="mx-auto grid max-w-6xl gap-4 px-4 sm:px-6 py-8 md:grid-cols-2">
           {settings.whyShop.map((item) => <article key={item.title} className="card p-5"><h3 className="font-serif text-2xl">{item.title}</h3><p className="mt-2 text-muted">{item.body}</p></article>)}
         </section>
       ) : null}
       {settings.sections.policies ? (
-        <section className="mx-auto max-w-6xl px-4 py-8">
+        <section className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
           <h2 className="font-serif text-4xl">Delivery and returns</h2>
           <p className="mt-3 max-w-3xl text-muted">{settings.shipping.deliveryNote} Shipping is {formatInr(settings.shipping.flatRatePaise)}{settings.shipping.freeShippingThresholdPaise > 0 ? `, or complimentary from ${formatInr(settings.shipping.freeShippingThresholdPaise)}.` : "."}</p>
           <div className="mt-4 flex gap-4 text-sm"><Link href="/policies/returns">Returns</Link><Link href="/policies/privacy">Privacy</Link><Link href="/contact">Customer support</Link></div>
@@ -73,9 +74,12 @@ export default async function HomePage() {
 
 function ProductRail({ title, products, empty }: { title: string; products: { slug: string; name: string; pricePaise: number; compareAtPricePaise: number | null; images: { url: string; alt: string }[]; inStock: boolean }[]; empty: string }) {
   return (
-    <section className="mx-auto max-w-6xl px-4 py-8">
-      <h2 className="font-serif text-4xl">{title}</h2>
-      {products.length === 0 ? <div className="mt-6"><EmptyState title={title} body={empty} /></div> : <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">{products.map((product) => <ProductCard key={product.slug} product={product} />)}</div>}
+    <section className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
+      <div className="relative inline-block pb-1">
+        <h2 className="font-serif text-3xl sm:text-4xl text-stone-900 tracking-tight">{title}</h2>
+        <div className="mt-1.5 h-[2px] w-12 bg-rose/90" />
+      </div>
+      {products.length === 0 ? <div className="mt-6"><EmptyState title={title} body={empty} /></div> : <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">{products.map((product) => <ProductCard key={product.slug} product={product} />)}</div>}
     </section>
   );
 }
