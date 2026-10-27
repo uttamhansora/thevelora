@@ -1,4 +1,4 @@
-import { connectDB } from "@/lib/db/mongoose";
+import { connectDB, isDemoModeEnabled } from "@/lib/db/mongoose";
 import { defaultStoreSettings, storeSettingsSchema, type StoreSettingsData } from "@/lib/validation/settings";
 import { StoreSettingsModel } from "@/models/store-settings";
 
@@ -53,6 +53,9 @@ export function resolveMerchant(settings: StoreSettingsData): { vpa: string; nam
 }
 
 export async function getStoreSettingsSafe(): Promise<{ settings: StoreSettingsData; unavailable: boolean }> {
+  if (isDemoModeEnabled()) {
+    return { settings: defaultStoreSettings, unavailable: false };
+  }
   try {
     return { settings: await getStoreSettings(), unavailable: false };
   } catch {

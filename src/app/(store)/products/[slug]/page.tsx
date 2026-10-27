@@ -2,12 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductGallery } from "@/components/product/gallery";
-import { ReviewForm } from "@/components/product/review-form";
 import { PurchasePanel } from "@/components/product/purchase-panel";
-import { ProductCard } from "@/components/storefront/site-chrome";
+import { ProductCard } from "@/components/product/product-card";
+import { ProductShareBar } from "@/components/product/product-share";
 import { getSession } from "@/lib/auth/session";
 import { connectDB } from "@/lib/db/mongoose";
-import { ReviewModel } from "@/models/supporting";
 import { CategoryModel, CollectionModel } from "@/models/taxonomy";
 import { getPublicProduct, relatedProducts, toPublicProduct } from "@/services/catalog";
 
@@ -36,11 +35,10 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const product = await getPublicProduct(slug, Boolean(session)).catch(() => null);
   if (!product) notFound();
   await connectDB();
-  const [category, collections, related, reviews] = await Promise.all([
+  const [category, collections, related] = await Promise.all([
     product.categoryId ? CategoryModel.findById(product.categoryId).lean() : null,
     CollectionModel.find({ _id: { $in: product.collectionIds } }).lean(),
     relatedProducts(product),
-    ReviewModel.find({ productId: product._id, isPublished: true }).sort({ createdAt: -1 }).lean<Array<{ name: string; rating: number; body: string }>>(),
   ]);
   const view = toPublicProduct(
     product,
@@ -48,7 +46,6 @@ export default async function ProductPage({ params, searchParams }: Props) {
     collections.map((item) => ({ name: String(item.name), slug: String(item.slug) })),
   );
   const appUrl = process.env.APP_URL || "http://localhost:3000";
-  const average = reviews.length ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : null;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -63,7 +60,6 @@ export default async function ProductPage({ params, searchParams }: Props) {
       availability: view.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       url: `${appUrl}/products/${view.slug}`,
     },
-    ...(average != null ? { aggregateRating: { "@type": "AggregateRating", ratingValue: average.toFixed(1), reviewCount: reviews.length } } : {}),
   };
   const breadcrumb = {
     "@context": "https://schema.org",
@@ -85,19 +81,17 @@ export default async function ProductPage({ params, searchParams }: Props) {
           <h1 className="font-serif text-5xl">{view.name}</h1>
           <p className="mt-4 leading-7">{view.shortDescription}</p>
           <div className="mt-6"><PurchasePanel product={view} /></div>
-          <div className="mt-6 flex gap-3 text-sm">
-            <a href={`https://wa.me/?text=${encodeURIComponent(`${view.name} ${appUrl}/products/${view.slug}`)}`}>Share</a>
-          </div>
+          <ProductShareBar
+            url={`${appUrl}/products/${view.slug}`}
+            title={view.name}
+            image={view.images[0]?.url}
+            className="mt-6"
+          />
           <div className="prose mt-8 max-w-none whitespace-pre-wrap">{view.description}</div>
           {attributes.length > 0 ? <dl className="mt-6 grid gap-2">{attributes.map(([key, value]) => <div key={key} className="flex justify-between gap-4 border-b border-border py-2"><dt className="capitalize text-muted">{key.replaceAll(/[A-Z]/g, (letter) => ` ${letter.toLowerCase()}`)}</dt><dd>{value}</dd></div>)}</dl> : null}
           <p className="mt-6 text-sm text-muted">Shipping and returns follow the current store policy. A PIN-code match does not guarantee courier serviceability.</p>
         </div>
       </div>
-      <section className="mt-12">
-        <h2 className="font-serif text-4xl">Reviews</h2>
-        {reviews.length === 0 ? <p className="mt-3 text-muted">No published reviews yet.</p> : reviews.map((review) => <article key={review.body} className="mt-4"><p>{review.name} · {review.rating}/5</p><p className="text-muted">{review.body}</p></article>)}
-        <ReviewForm productId={view.id} />
-      </section>
       {related.length > 0 ? <section className="mt-12"><h2 className="font-serif text-4xl">Related</h2><div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{related.map((item) => <ProductCard key={item.slug} product={toPublicProduct(item)} />)}</div></section> : null}
     </div>
   );

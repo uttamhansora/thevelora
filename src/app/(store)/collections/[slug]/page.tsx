@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CollectionFilters } from "@/components/storefront/collection-filters";
-import { ProductCard } from "@/components/storefront/site-chrome";
+import { ProductCard } from "@/components/product/product-card";
 import { EmptyState } from "@/components/shared/states";
 import { listPublicProducts, listTaxonomy } from "@/services/catalog";
 
@@ -81,7 +81,7 @@ export default async function CollectionPage({ params, searchParams }: Props) {
         <h1 className="font-serif text-5xl capitalize">{collection.name}</h1>
         {collection.description ? <p className="mt-3 max-w-2xl text-muted">{collection.description}</p> : null}
         <p className="mt-2 text-sm text-muted">{result.total} products</p>
-        {result.items.length === 0 ? <div className="mt-6"><EmptyState title="Nothing in this collection yet" body="Published products assigned to this collection will show up here." /></div> : <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">{result.items.map((product) => <ProductCard key={product.slug} product={product} showActions />)}</div>}
+        {result.items.length === 0 ? <div className="mt-6"><EmptyState title="Nothing in this collection yet" body="Published products assigned to this collection will show up here." /></div> : <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">{result.items.map((product) => <ProductCard key={product.slug} product={product} showActions showWishlist />)}</div>}
         <div className="mt-6 flex gap-3">
           {result.page > 1 ? <Link className="btn btn-secondary" href={pageLink(result.page - 1)}>Previous</Link> : null}
           {result.page < pages ? <Link className="btn btn-secondary" href={pageLink(result.page + 1)}>Next</Link> : null}

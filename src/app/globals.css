@@ -41,7 +41,11 @@ h1, h2, h3, .font-serif { font-family: var(--font-cormorant), serif; }
 
 /* a { color: inherit; } */
 
-button, input, textarea, select { font: inherit; }
+@layer base {
+  button, input, textarea, select {
+    font-family: var(--font-inter), sans-serif;
+  }
+}
 
 :focus-visible {
   outline: 2px solid var(--color-primary);

@@ -12,16 +12,17 @@ export function PriceDisplay({
   compact?: boolean;
 }) {
   const discount = discountPercent(pricePaise, compareAtPricePaise);
-  const priceClass = compact ? "text-sm font-semibold text-primary sm:text-lg" : "text-lg font-semibold text-primary";
-  const metaClass = compact ? "text-[11px] sm:text-sm" : "text-sm";
+  const priceClass = compact ? "text-base sm:text-lg font-bold text-text tracking-tight" : "text-xl sm:text-2xl font-bold text-text tracking-tight";
+  const compareClass = compact ? "text-xs sm:text-sm text-muted line-through font-normal" : "text-sm sm:text-base text-muted line-through font-normal";
+  const badgeClass = compact ? "rounded-md bg-[#f6eee9] px-1.5 py-0.5 text-[11px] sm:text-xs font-semibold text-primary" : "rounded-md bg-[#f6eee9] px-2 py-0.5 text-xs sm:text-sm font-semibold text-primary";
   return (
-    <div className={`flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-2 ${className}`}>
+    <div className={`flex flex-wrap items-baseline gap-2 ${className}`}>
       <span className={priceClass}>{formatInr(pricePaise)}</span>
-      {discount != null && compareAtPricePaise != null ? (
-        <div className={`flex flex-wrap items-center gap-1.5 ${metaClass}`}>
-          <s className="text-muted">{formatInr(compareAtPricePaise)}</s>
-          <span className="rounded-full bg-primary/10 px-1.5 py-0.5 font-medium text-primary">{discount}% off</span>
-        </div>
+      {discount != null && compareAtPricePaise != null && compareAtPricePaise > pricePaise ? (
+        <>
+          <s className={compareClass}>{formatInr(compareAtPricePaise)}</s>
+          <span className={badgeClass}>{discount}% off</span>
+        </>
       ) : null}
     </div>
   );
